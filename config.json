@@ -1,0 +1,293 @@
+{
+  "buttons": [
+    {
+      "id": "btn_1",
+      "label": "🏢 Biz haqimizda",
+      "icon": "🏢",
+      "text": "Biz haqimizda",
+      "type": "message",
+      "message": "🏛 Raqabotbardosh maosh, ahil jamoa, o'sish uchun qadriyatlarga asoslangan muhit, kompaniya hisobidan tushlik, farzandingiz uchun xususiy maktabimiz va bog'chalarimizda chegirmalar va yana bir qator bonuslar sizga qiziq bo'lsa, unda hoziroq ushbu bot orqali bizda mavjud bo'sh ish o'rinlarini ko'ring va o'zingizga mosiga ariza topshiring!",
+      "section": "",
+      "children": []
+    },
+    {
+      "id": "btn_2",
+      "label": "💼 Bo'sh ish o'rinlari",
+      "icon": "💼",
+      "text": "Bo'sh ish o'rinlari",
+      "type": "menu",
+      "message": "Yo'nalishni tanlang:",
+      "section": "",
+      "children": [
+        {
+          "id": "btn_2_1",
+          "label": "🏫 Maktab",
+          "icon": "🏫",
+          "text": "Maktab",
+          "type": "menu",
+          "message": "Filialni tanlang:",
+          "section": "",
+          "children": [
+            {
+              "id": "btn_2_1_1",
+              "label": "📍 Sergeli Maktab",
+              "icon": "📍",
+              "text": "Sergeli Maktab",
+              "type": "menu",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "Maktab",
+              "children": [
+                {
+                  "id": "ce6a3781",
+                  "label": "💼 Kimyo ustoz kerak",
+                  "icon": "💼",
+                  "text": "Kimyo ustoz kerak",
+                  "type": "application",
+                  "message": "Maktab",
+                  "section": "",
+                  "children": []
+                },
+                {
+                  "id": "d108ca2a",
+                  "label": "👨‍🏫 Tarbiyachi kerak",
+                  "icon": "👨‍🏫",
+                  "text": "Tarbiyachi kerak",
+                  "type": "application",
+                  "message": "q",
+                  "section": "Maktab-1",
+                  "children": []
+                },
+                {
+                  "id": "ec0b9e8d",
+                  "label": "👩‍🏫 Biologiya Ustoz kerak",
+                  "icon": "👩‍🏫",
+                  "text": "Biologiya Ustoz kerak",
+                  "type": "application",
+                  "message": "",
+                  "section": "Maktab",
+                  "children": []
+                },
+                {
+                  "id": "cc0bf4c2",
+                  "label": "🎁 asdasd",
+                  "icon": "🎁",
+                  "text": "asdasd",
+                  "type": "message",
+                  "message": "",
+                  "section": "",
+                  "children": []
+                },
+                {
+                  "id": "33837b31",
+                  "label": "👩‍🏫 SAT ustoz kerak",
+                  "icon": "👩‍🏫",
+                  "text": "SAT ustoz kerak",
+                  "type": "application",
+                  "message": "",
+                  "section": "Maktab",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "btn_2_1_2",
+              "label": "📍 Qo'yliq maktab",
+              "icon": "📍",
+              "text": "Qo'yliq maktab",
+              "type": "menu",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "Maktab",
+              "children": [
+                {
+                  "id": "211b6bfb",
+                  "label": "🎁 asdasd",
+                  "icon": "🎁",
+                  "text": "asdasd",
+                  "type": "application",
+                  "message": "",
+                  "section": "Maktab",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "btn_2_1_3",
+              "label": "📍 Qa'ni maktab",
+              "icon": "📍",
+              "text": "Qa'ni maktab",
+              "type": "application",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "Maktab",
+              "children": []
+            },
+            {
+              "id": "97f8ac57",
+              "label": "💼 Vatan maktba",
+              "icon": "💼",
+              "text": "Vatan maktba",
+              "type": "menu",
+              "message": "",
+              "section": "",
+              "children": [
+                {
+                  "id": "e50cc5bb",
+                  "label": "🏢 Biz haqimizda",
+                  "icon": "🏢",
+                  "text": "Biz haqimizda",
+                  "type": "application",
+                  "message": "",
+                  "section": "Maktab",
+                  "children": []
+                },
+                {
+                  "id": "66798475",
+                  "label": "👩‍🏫 asdasdasd",
+                  "icon": "👩‍🏫",
+                  "text": "asdasdasd",
+                  "type": "application",
+                  "message": "",
+                  "section": "Maktab-11sasd",
+                  "children": []
+                },
+                {
+                  "id": "d69b63d8",
+                  "label": "🎯 zxczxc",
+                  "icon": "🎯",
+                  "text": "zxczxc",
+                  "type": "application",
+                  "message": "",
+                  "section": "",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "f577e84f",
+              "label": "🏢 Berenuiy Maktab",
+              "icon": "🏢",
+              "text": "Berenuiy Maktab",
+              "type": "menu",
+              "message": "",
+              "section": "",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "btn_2_2",
+          "label": "👶 Bog'cha",
+          "icon": "👶",
+          "text": "Bog'cha",
+          "type": "menu",
+          "message": "Bog'cha filialini tanlang:",
+          "section": "",
+          "children": [
+            {
+              "id": "btn_2_2_1",
+              "label": "👶 Beruniy Mudarris Kids",
+              "icon": "👶",
+              "text": "Beruniy Mudarris Kids",
+              "type": "application",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "Bog'cha",
+              "children": []
+            },
+            {
+              "id": "btn_2_2_2",
+              "label": "👶 Yangihayot Mudarris Kids",
+              "icon": "👶",
+              "text": "Yangihayot Mudarris Kids",
+              "type": "application",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "Bog'cha",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "btn_2_3",
+          "label": "📚 O'quv markaz",
+          "icon": "📚",
+          "text": "O'quv markaz",
+          "type": "menu",
+          "message": "O'quv markazi filialini tanlang:",
+          "section": "",
+          "children": [
+            {
+              "id": "btn_2_3_1",
+              "label": "📖 Beruniy o'quv markazi",
+              "icon": "📖",
+              "text": "Beruniy o'quv markazi",
+              "type": "application",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "O'quv markaz",
+              "children": []
+            },
+            {
+              "id": "btn_2_3_2",
+              "label": "📖 Yangihayot o'quv markazi",
+              "icon": "📖",
+              "text": "Yangihayot o'quv markazi",
+              "type": "application",
+              "message": "✅ Arizangiz qabul qilindi!\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+              "section": "O'quv markaz",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "btn_3",
+      "label": "💎 Iste'dotlar zaxirasi",
+      "icon": "💎",
+      "text": "Iste'dotlar zaxirasi",
+      "type": "menu",
+      "message": "Mudarris School: Istedodlar zahirasiga xush kelibsiz!\n\nAgar «Bo'sh ish o'rinlari» bo'limida o'zingizga mos vakansiya topa olmagan bo'lsangiz, lekin baribir Mudarris School jamoasida ishlashni istasangiz. Unda shu yerda anketani to'ldiring.\n\nMudarris School: Qachon bizning jamoamizning a'zosi bo'lishni xohlaysiz?",
+      "section": "",
+      "children": [
+        {
+          "id": "btn_3_1",
+          "label": "🗓 1-2 Oy ichida",
+          "icon": "🗓",
+          "text": "1-2 Oy ichida",
+          "type": "application",
+          "message": "✅ Rahmat! Ma'lumotingiz saqlandi.\n\nMutaxassislarimiz ko'rib chiqib bog'lanishadi.",
+          "section": "Iste'dotlar zaxirasi",
+          "children": []
+        },
+        {
+          "id": "btn_3_2",
+          "label": "🗓 3-6 Oy ichida",
+          "icon": "🗓",
+          "text": "3-6 Oy ichida",
+          "type": "application",
+          "message": "✅ Rahmat! Ma'lumotingiz saqlandi.\n\nMutaxassislarimiz ko'rib chiqib bog'lanishadi.",
+          "section": "Iste'dotlar zaxirasi",
+          "children": []
+        },
+        {
+          "id": "btn_3_3",
+          "label": "📅 Kelgusi Yildan",
+          "icon": "📅",
+          "text": "Kelgusi Yildan",
+          "type": "application",
+          "message": "✅ Rahmat! Ma'lumotingiz saqlandi.\n\nMutaxassislarimiz ko'rib chiqib bog'lanishadi.",
+          "section": "Iste'dotlar zaxirasi",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "btn_4",
+      "label": "📞 Biz bilan bog'laning",
+      "icon": "📞",
+      "text": "Biz bilan bog'laning",
+      "type": "message",
+      "message": "📞 Biz bilan bog'laning\n\nSavolingiz yoki muammoingizni yozing.",
+      "section": "",
+      "children": []
+    }
+  ],
+  "welcome_message": "Mudarris Xalqaro Maktabi rasmiy botiga xush kelibsiz!"
+}
