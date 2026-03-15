@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mudarris Admin</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+:root{--bg:#f3f4f6;--card:#fff;--text:#111;--muted:#888;--border:#f0f0f0;--accent:#2c2c2e;--r:12px;--rm:8px}
+body{background:var(--bg);display:flex;width:100vw; user-select:none; height:100vh;overflow:hidden;color:var(--text)}
+
+/* Sidebar */
+.sidebar{width:260px;background:var(--card);display:flex;flex-direction:column;padding:28px 18px;border-right:1px solid var(--border);height:100%;flex-shrink:0}
+.logo{font-size:20px;font-weight:700;color:var(--text);margin-bottom:36px;padding-left:8px;display:flex;align-items:center;gap:10px}
+.logo i{color:#6366f1;font-size:22px}
+.nav-menu{display:flex;flex-direction:column;gap:4px;flex:1}
+.nav-item{display:flex;align-items:center;padding:12px 16px;color:var(--muted);font-size:14px;font-weight:500;border-radius:var(--rm);transition:.2s;cursor:pointer;gap:12px;user-select:none}
+.nav-item i{width:20px;font-size:16px;text-align:center}
+.nav-item:hover{background:#f8f9fa;color:var(--text)}
+.nav-item.active{background:#f3f4f6;color:var(--text);font-weight:600}
+.help-box{background:linear-gradient(135deg,#1f1f1f,#2d2d2d);padding:20px;border-radius:var(--r);color:#fff;margin-top:auto;text-align:center}
+.help-box h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.help-box p{font-size:12px;color:#9ca3af;margin-bottom:14px}
+.help-box button{width:100%;padding:9px;border-radius:var(--rm);border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-family:'Poppins',sans-serif;font-weight:500;cursor:pointer;font-size:13px;transition:.2s}
+.help-box button:hover{background:rgba(255,255,255,.2)}
+.conn-wrap{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--card);padding:16px 36px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.topbar h2{font-size:22px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;gap:12px;align-items:center}
+.search-input{background:#f3f4f6;border:none;padding:10px 20px;border-radius:var(--rm);outline:none;font-size:13px;width:240px;transition:.2s}
+.search-input:focus{box-shadow:0 0 0 2px rgba(99,102,241,.2)}
+.content{flex:1;overflow-y:auto;padding:32px 36px}
+.page{display:none}
+.page.active{display:block}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px}
+.stat-card{background:var(--card);padding:22px;border-radius:var(--r);box-shadow:0 2px 12px rgba(0,0,0,.03)}
+.stat-card.dark{background:linear-gradient(135deg,#1f1f1f,#2d2d2d);color:#fff}
+.stat-label{font-size:12px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-card.dark .stat-label{color:#9ca3af}
+.stat-val{font-size:34px;font-weight:700;line-height:1}
+.stat-val.green{color:#15803d}
+.stat-val.blue{color:#0369a1}
+.stat-val.purple{color:#6366f1}
+
+/* Card */
+.card{background:var(--card);border-radius:var(--r);padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.03);margin-bottom:20px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.card-title{font-size:18px;font-weight:600;color:var(--text)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;text-transform:uppercase;color:var(--muted);padding:14px 10px;letter-spacing:.5px;font-weight:600;border-bottom:2px solid var(--border)}
+td{padding:15px 10px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.name-strong{font-weight:600;font-size:14px}
+.name-sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Badges */
+.badge{display:inline-block;padding:6px 14px;border-radius:var(--rm);font-size:12px;font-weight:600}
+.badge-pending{background:#e0f2fe;color:#0369a1}
+.badge-reviewed{background:#dcfce7;color:#15803d}
+.badge-completed{background:#ede9fe;color:#6d28d9}
+.badge-new{background:#fce7f3;color:#9d174d}
+.badge-replied{background:#dcfce7;color:#15803d}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:.2s;font-family:'Poppins',sans-serif}
+.btn-dark{background:var(--accent);color:#fff}
+.btn-dark:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.btn-ghost{background:transparent;color:#6366f1;border:1.5px solid #e0e0f0}
+.btn-ghost:hover{background:#f5f3ff}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-link{background:none;border:none;color:#6366f1;font-size:13px;font-weight:500;cursor:pointer;padding:0;font-family:'Poppins',sans-serif}
+.btn-link:hover{text-decoration:underline}
+.btn-view{background:#f0f4ff;border:1.5px solid #c7d2fe;color:#4f46e5;width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:.15s}
+.btn-view:hover{background:#4f46e5;color:#fff;transform:translateY(-1px);box-shadow:0 3px 8px rgba(79,70,229,.3)}
+.btn-excel{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--rm);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;transition:.15s;font-family:'Poppins',sans-serif}
+.btn-excel:hover{background:#16a34a;color:#fff;transform:translateY(-1px);box-shadow:0 3px 8px rgba(22,163,74,.25)}
+.filter-select{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 14px;font-size:13px;color:#374151;font-family:'Poppins',sans-serif;outline:none;cursor:pointer;transition:.15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.filter-select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1);background-color:#fff}
+.filter-select:hover{border-color:#c7d2fe;background-color:#fff}
+.btn-edit{background:#fefce8;border:1.5px solid #fde68a;color:#b45309;width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:.15s}
+.btn-edit:hover{background:#b45309;color:#fff;transform:translateY(-1px);box-shadow:0 3px 8px rgba(180,83,9,.25)}
+.btn-del{background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;width:34px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:.15s}
+.btn-del:hover{background:#dc2626;color:#fff;transform:translateY(-1px);box-shadow:0 3px 8px rgba(220,38,38,.25)}
+.action-btns{display:flex;gap:6px;align-items:center}
+
+/* Select */
+select,input[type=text],textarea{font-family:'Poppins',sans-serif;border:1.5px solid #e5e7eb;border-radius:var(--rm);padding:9px 14px;font-size:13px;color:var(--text);background:#fff;outline:none;transition:.15s}
+select:focus,input[type=text]:focus,textarea:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:22px;color:var(--text)}
+.form-group{margin-bottom:16px}
+.form-label{font-size:11px;font-weight:600;color:#374151;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.4px}
+.form-group input,.form-group select,.form-group textarea{width:100%}
+.form-group textarea{resize:vertical;min-height:80px}
+.modal-footer{display:flex;gap:10px;margin-top:22px}
+.modal-footer .btn{flex:1;justify-content:center}
+
+/* Btn tree */
+.btn-node{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;transition:.15s}
+.btn-node:hover{border-color:#c7d2fe;box-shadow:0 2px 8px rgba(99,102,241,.08)}
+.btn-node-info{display:flex;align-items:center;gap:12px}
+.btn-emoji{font-size:22px;width:42px;height:42px;background:#f5f3ff;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.btn-name{font-size:13px;font-weight:600;color:var(--text)}
+.btn-type-tag{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:500}
+.tag-message{background:#e0e7ff;color:#3730a3}
+.tag-menu{background:#fce7f3;color:#9d174d}
+.tag-application{background:#dcfce7;color:#15803d}
+.btn-msg{font-size:11px;color:var(--muted);margin-top:3px;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-actions{display:flex;gap:6px}
+.child-wrap{border-left:2px solid #e0e7ff;margin-left:28px;padding-left:16px;margin-top:4px}
+
+/* Icon grid */
+.icon-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:8px}
+.ig-btn{font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:.1s}
+.ig-btn:hover{background:#f5f3ff}
+.ig-btn.sel{border-color:#6366f1;background:#eef2ff}
+
+/* Reply */
+.reply-box{background:#f8fafc;border-radius:10px;padding:14px;margin-top:14px}
+.reply-item{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--border)}
+.reply-item .rtime{font-size:10px;color:var(--muted)}
+.reply-item .rtext{font-size:13px;color:#374151;margin-top:2px}
+.detail-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-key{font-size:11px;font-weight:600;color:var(--muted);min-width:90px;text-transform:uppercase;letter-spacing:.3px;padding-top:1px}
+.detail-val{font-size:13px;color:#374151}
+
+/* Welcome card */
+.welcome-card{background:linear-gradient(135deg,#1f1f1f,#3d3d3d);border-radius:var(--r);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.welcome-card input{flex:1;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);border-radius:var(--rm);padding:9px 14px;color:#fff;font-size:13px;font-family:'Poppins',sans-serif;outline:none}
+.welcome-card input::placeholder{color:rgba(255,255,255,.5)}
+.welcome-card .btn{background:#fff;color:#111;border:none;font-weight:600}
+.welcome-card .btn:hover{background:#f3f4f6}
+
+.conn-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.conn-on{background:#22c55e}
+.conn-off{background:#ef4444}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <span>Mudarris Admin</span>
+  </div>
+  <nav class="nav-menu">
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <i class="fa-solid fa-chart-pie" style="color:#3b82f6"></i> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('applications',this)">
+      <i class="fa-solid fa-file-lines" style="color:#f97316"></i> Arizalar
+    </div>
+    <div class="nav-item" onclick="showPage('contacts',this)">
+      <i class="fa-solid fa-comment-dots" style="color:#10b981"></i> Murojaatlar
+    </div>
+    <div class="nav-item" onclick="showPage('buttons',this)">
+      <i class="fa-solid fa-sliders" style="color:#8b5cf6"></i> Tugmalar
+    </div>
+  </nav>
+  <div class="help-box">
+    <h4>Yordam kerakmi?</h4>
+    <p>Texnik yordam 24/7 ishlaydi.</p>
+    <button onclick="window.open('https://t.me/Bakhromovich_S')">Bog'lanish</button>
+  </div>
+  <div class="conn-wrap">
+    <div id="conn-status" style="font-size:12px;color:#888">
+      <span class="conn-dot conn-on"></span><span>API ulangan</span>
+    </div>
+    <div style="font-size:11px;color:#bbb;margin-top:6px">© 2026 Mudarris School</div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <h2 id="page-title">Dashboard</h2>
+    <div class="topbar-right">
+      <div style="position:relative;display:inline-block">
+        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;pointer-events:none"></i>
+        <input type="text" class="search-input" placeholder="Qidirish..." oninput="searchAll(this.value)" style="padding-left:38px">
+      </div>
+      <button class="btn btn-dark" onclick="loadAll()">
+        <i class="fa-solid fa-rotate"></i> Yangilash
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card dark">
+          <div class="stat-label">Jami arizalar</div>
+          <div class="stat-val" id="s-total">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ko'rildi</div>
+          <div class="stat-val green" id="s-reviewed">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Kutilmoqda</div>
+          <div class="stat-val blue" id="s-pending">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Yakunlandi</div>
+          <div class="stat-val purple" id="s-completed">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Oxirgi arizalar</span>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select id="d-status" onchange="filterDash()" class="filter-select">
+              <option value="">Barcha statuslar</option>
+              <option value="pending">⏳ Kutilmoqda</option>
+              <option value="reviewed">✅ Ko'rildi</option>
+              <option value="completed">🏁 Yakunlandi</option>
+            </select>
+            <button class="btn-excel" onclick="exportExcel('apps')"><i class="fa-solid fa-file-excel"></i> Excel</button>
+          </div>
+        </div>
+        <div id="dash-table"></div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS -->
+    <div class="page" id="page-applications">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Barcha arizalar</span>
+          <div class="filters">
+            <button class="btn-excel" onclick="exportExcel('apps')">
+              <i class="fa-solid fa-file-excel"></i> Excel
+            </button>
+            <select id="f-section" onchange="filterApps()" class="filter-select">
+              <option value="">Barcha bo'limlar</option>
+              <option>Maktab</option>
+              <option>Bog'cha</option>
+              <option>O'quv markaz</option>
+              <option>Iste'dotlar zaxirasi</option>
+            </select>
+            <select id="f-status" onchange="filterApps()" class="filter-select">
+              <option value="">Barcha statuslar</option>
+              <option value="pending">⏳ Kutilmoqda</option>
+              <option value="reviewed">✅ Ko'rildi</option>
+              <option value="completed">🏁 Yakunlandi</option>
+            </select>
+          </div>
+        </div>
+        <div id="apps-table"></div>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="page" id="page-contacts">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Murojaatlar</span>
+          <div class="filters">
+            <button class="btn-excel" onclick="exportExcel('contacts')">
+              <i class="fa-solid fa-file-excel"></i> Excel
+            </button>
+            <select id="f-cstatus" onchange="filterContacts()" class="filter-select">
+              <option value="">Barcha statuslar</option>
+              <option value="new">🔔 Yangi</option>
+              <option value="replied">✅ Javob berildi</option>
+            </select>
+          </div>
+        </div>
+        <div id="contacts-table"></div>
+      </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="page" id="page-buttons">
+      <div class="welcome-card">
+        <i class="fa-solid fa-robot" style="font-size:22px;color:#9ca3af;flex-shrink:0"></i>
+        <input id="welcome-inp" type="text" placeholder="Bot ochilganda ko'rsatiladigan xabar...">
+        <button class="btn" onclick="saveWelcome()">
+          <i class="fa-solid fa-floppy-disk"></i> Saqlash
+        </button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btn btn-dark" onclick="openAdd(null)">
+          <i class="fa-solid fa-plus"></i> Yangi tugma
+        </button>
+      </div>
+      <div id="btn-tree"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-modal">
+  <div class="modal">
+    <h3 id="dm-title">Tafsilot</h3>
+    <div id="dm-body"></div>
+    <div style="margin-top:16px">
+      <div class="form-group">
+        <label class="form-label">📩 Javob yozish</label>
+        <textarea id="reply-text" placeholder="Foydalanuvchiga yuboriladigan javob..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-dark" onclick="sendReply()">
+          <i class="fa-solid fa-paper-plane"></i> Yuborish
+        </button>
+        <button class="btn btn-ghost" onclick="closeDetail()">Yopish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUTTON MODAL -->
+<div class="overlay" id="btn-modal">
+  <div class="modal">
+    <h3 id="bm-title">Tugma qo'shish</h3>
+    <div class="form-group">
+      <label class="form-label">Icon tanlang</label>
+      <div class="icon-grid" id="icon-grid"></div>
+      <input type="text" id="custom-icon" placeholder="Yoki emoji kiriting: 🎯" oninput="setCI(this.value)" style="width:100%">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tugma matni</label>
+      <input type="text" id="btn-text" placeholder="Masalan: Toshkent filiali" oninput="updatePrev()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ko'rinishi</label>
+      <div style="background:#f8fafc;border-radius:8px;padding:10px 14px">
+        <span id="btn-prev" style="font-size:14px;font-weight:500">—</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Turi</label>
+      <select id="btn-type" onchange="onType()" style="width:100%">
+        <option value="message">💬 Xabar yuborish</option>
+        <option value="menu">📋 Alt-menyu</option>
+        <option value="application">📝 Ariza qabul qilish</option>
+      </select>
+    </div>
+    <div class="form-group" id="sec-field" style="display:none">
+      <label class="form-label">Bo'lim nomi</label>
+      <input type="text" id="btn-sec" placeholder="Masalan: Maktab" style="width:100%">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Xabar matni</label>
+      <textarea id="btn-msg" placeholder="Foydalanuvchiga ko'rsatiladigan matn..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-dark" onclick="saveBtn()">
+        <i class="fa-solid fa-floppy-disk"></i> Saqlash
+      </button>
+      <button class="btn btn-ghost" onclick="closeBM()">Bekor</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API=window.location.origin+"/api";
+const ICONS=["🏢","💼","🏫","👶","📚","📞","💎","📍","📖","🗓","📅","🎯","🏆","⭐","🔥","💡","🎓","👨‍🏫","👩‍🏫","🏛","📋","✅","🔔","💬","📢","🌟","🎁","🚀","🏠","🌍","💻","📱","🎨","🛠","⚙️","🔑","💰","📊","📈","🤝","👥","🌈","🏋️","🎵","📸","✈️","🎪","🎭"];
+let allApps=[],allContacts=[],configData=null,selIcon="",editId=null,addParentId=null,detailType=null,detailId=null;
+
+async function loadAll(){
+  try{
+    const[ar,cr,cfr]=await Promise.all([fetch(`${API}/applications`),fetch(`${API}/contacts`),fetch(`${API}/config`)]);
+    if(!ar.ok||!cr.ok||!cfr.ok) throw new Error("Server xatosi");
+    const ad=await ar.json(),cd=await cr.json();
+    configData=await cfr.json();
+    allApps=ad.applications||[];
+    allContacts=cd.contacts||[];
+    const s=ad.stats||{};
+    document.getElementById("s-total").textContent=s.total??0;
+    document.getElementById("s-reviewed").textContent=s.reviewed??0;
+    document.getElementById("s-pending").textContent=s.pending??0;
+    document.getElementById("s-completed").textContent=s.completed??0;
+    renderAppsTable("dash-table",allApps.slice(0,5));
+    renderAppsTable("apps-table",allApps);
+    renderContactsTable("contacts-table",allContacts);
+    renderBtnTree();
+    if(configData&&configData.welcome_message)document.getElementById("welcome-inp").value=configData.welcome_message;
+    setConn(true);
+  }catch(e){
+    setConn(false);
+    document.getElementById("btn-tree").innerHTML='<p style="color:#ef4444;padding:20px;font-size:13px">⚠️ Server bilan bog\'lanib bo\'lmadi. http://localhost:5000 ishlaayotganini tekshiring.</p>';
+  }
+}
+
+function setConn(on){
+  const el=document.getElementById("conn-status");
+  el.innerHTML=`<span class="conn-dot ${on?'conn-on':'conn-off'}"></span><span>${on?'API ulangan':'API ulanmagan'}</span>`;
+}
+
+function showPage(id,el){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  if(el)el.classList.add("active");
+  const titles={dashboard:"Dashboard",applications:"Arizalar",contacts:"Murojaatlar",buttons:"Tugmalar"};
+  document.getElementById("page-title").textContent=titles[id]||id;
+}
+
+function searchAll(q){
+  if(!q){renderAppsTable("apps-table",allApps);return}
+  q=q.toLowerCase();
+  const f=allApps.filter(a=>(a.name||'').toLowerCase().includes(q)||(a.phone||'').includes(q)||(a.section||'').toLowerCase().includes(q));
+  renderAppsTable("apps-table",f);
+  if(!document.getElementById("page-applications").classList.contains("active")){
+    showPage('applications',document.querySelector('.nav-item:nth-child(2)'));
+  }
+}
+
+function badge(s){
+  const m={pending:["Kutilmoqda","badge-pending"],reviewed:["Ko'rildi","badge-reviewed"],completed:["Yakunlandi","badge-completed"],new:["Yangi","badge-new"],replied:["Javob berildi","badge-replied"]};
+  const[l,c]=m[s]||[s,""];
+  return`<span class="badge ${c}">${l}</span>`;
+}
+
+function renderAppsTable(tid,apps){
+  const el=document.getElementById(tid);
+  if(!apps||!apps.length){el.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:32px;font-size:13px">Hozircha arizalar yo'q</p>`;return}
+  el.innerHTML=`<table><thead><tr>
+    <th>#</th><th>Ism</th><th>Telefon</th><th>Bo'lim</th><th>Vaqt</th><th>Status</th><th>Amal</th>
+  </tr></thead><tbody>${apps.map(a=>`<tr>
+    <td style="color:#9ca3af;font-size:13px">${a.id}</td>
+    <td><div class="name-strong">${a.name||a.tg_name||'—'}</div><div class="name-sub">@${a.username||'—'}</div></td>
+    <td style="font-size:13px;color:#6366f1;font-weight:600">${a.phone||'—'}</td>
+    <td><div class="name-strong">${a.section}</div><div class="name-sub">${a.detail||''}</div></td>
+    <td style="font-size:12px;color:#9ca3af">${a.time}</td>
+    <td>${badge(a.status)}</td>
+    <td><div class="action-btns">
+      <button class="btn-view" onclick="openDetail('app',${a.id})" title="Ko'rish"><i class="fa-solid fa-eye"></i></button>
+      <button class="btn-edit" onclick="editRecord('app',${a.id})" title="Tahrirlash"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn-del" onclick="deleteRecord('app',${a.id})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+    </div></td>
+  </tr>`).join("")}</tbody></table>`;
+}
+
+function renderContactsTable(tid,contacts){
+  const el=document.getElementById(tid);
+  if(!contacts||!contacts.length){el.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:32px;font-size:13px">Hozircha murojaatlar yo'q</p>`;return}
+  el.innerHTML=`<table><thead><tr>
+    <th>#</th><th>Foydalanuvchi</th><th>Telefon</th><th>Xabar</th><th>Vaqt</th><th>Status</th><th>Amal</th>
+  </tr></thead><tbody>${contacts.map(c=>`<tr>
+    <td style="color:#9ca3af;font-size:13px">${c.id}</td>
+    <td><div class="name-strong">${c.tg_name||'—'}</div><div class="name-sub">@${c.username||'—'}</div></td>
+    <td style="font-size:13px;color:#6366f1;font-weight:600">${c.phone||'—'}</td>
+    <td style="font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.text||'—'}</td>
+    <td style="font-size:12px;color:#9ca3af">${c.time}</td>
+    <td>${badge(c.status||'new')}</td>
+    <td><div class="action-btns">
+      <button class="btn-view" onclick="openDetail('contact',${c.id})" title="Ko'rish"><i class="fa-solid fa-eye"></i></button>
+      <button class="btn-del" onclick="deleteRecord('contact',${c.id})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+    </div></td>
+  </tr>`).join("")}</tbody></table>`;
+}
+
+function filterDash(){
+  var st=document.getElementById("d-status").value;
+  var f=allApps;
+  if(st)f=f.filter(function(a){return a.status===st;});
+  renderAppsTable("dash-table",f.slice(0,5));
+}
+
+function filterApps(){
+  const sec=document.getElementById("f-section").value;
+  const st=document.getElementById("f-status").value;
+  let f=allApps;
+  if(sec)f=f.filter(a=>a.section===sec);
+  if(st)f=f.filter(a=>a.status===st);
+  renderAppsTable("apps-table",f);
+}
+
+function filterContacts(){
+  const st=document.getElementById("f-cstatus").value;
+  let f=allContacts;
+  if(st)f=f.filter(c=>(c.status||'new')===st);
+  renderContactsTable("contacts-table",f);
+}
+
+function openDetail(type,id){
+  detailType=type;detailId=id;
+  let item=type==='app'?allApps.find(a=>a.id===id):allContacts.find(c=>c.id===id);
+  if(!item)return;
+  document.getElementById("reply-text").value="";
+  const replies=(item.replies||[]).map(r=>`<div class="reply-item"><div class="rtime">${r.time}</div><div class="rtext">${r.text}</div></div>`).join("");
+  if(type==='app'){
+    document.getElementById("dm-title").textContent=`Ariza #${item.id}`;
+    document.getElementById("dm-body").innerHTML=`
+      <div class="detail-row"><span class="detail-key">Ism</span><span class="detail-val"><strong>${item.name||item.tg_name}</strong></span></div>
+      <div class="detail-row"><span class="detail-key">Telegram</span><span class="detail-val">@${item.username||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Telefon</span><span class="detail-val" style="color:#6366f1;font-weight:600">${item.phone||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Ma'lumot</span><span class="detail-val">${item.info||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Bo'lim</span><span class="detail-val">${item.section} — ${item.detail||''}</span></div>
+      <div class="detail-row"><span class="detail-key">Vaqt</span><span class="detail-val">${item.time}</span></div>
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">
+        <select onchange="quickStatus(this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px">
+          <option value="pending" ${item.status==='pending'?'selected':''}>Kutilmoqda</option>
+          <option value="reviewed" ${item.status==='reviewed'?'selected':''}>Ko'rildi</option>
+          <option value="completed" ${item.status==='completed'?'selected':''}>Yakunlandi</option>
+        </select>
+      </span></div>
+      ${replies?`<div class="reply-box"><div style="font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:8px;text-transform:uppercase">Oldingi javoblar</div>${replies}</div>`:''}`;
+  }else{
+    document.getElementById("dm-title").textContent=`Murojaat #${item.id}`;
+    document.getElementById("dm-body").innerHTML=`
+      <div class="detail-row"><span class="detail-key">Foydalanuvchi</span><span class="detail-val"><strong>${item.tg_name||'—'}</strong></span></div>
+      <div class="detail-row"><span class="detail-key">Telegram</span><span class="detail-val">@${item.username||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Telefon</span><span class="detail-val" style="color:#6366f1;font-weight:600">${item.phone||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Xabar</span><span class="detail-val">${item.text||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Vaqt</span><span class="detail-val">${item.time}</span></div>
+      ${replies?`<div class="reply-box"><div style="font-size:11px;font-weight:600;color:#9ca3af;margin-bottom:8px;text-transform:uppercase">Oldingi javoblar</div>${replies}</div>`:''}`;
+  }
+  document.getElementById("detail-modal").classList.add("open");
+}
+
+async function quickStatus(val){
+  if(detailType!=='app')return;
+  await fetch(`${API}/applications/${detailId}/status`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:val})});
+  await loadAll();
+}
+
+function closeDetail(){document.getElementById("detail-modal").classList.remove("open");detailType=null;detailId=null;}
+
+async function sendReply(){
+  const text=document.getElementById("reply-text").value.trim();
+  if(!text){alert("Javob matni bo'sh!");return}
+  const url=detailType==='app'?`${API}/applications/${detailId}/reply`:`${API}/contacts/${detailId}/reply`;
+  try{
+    const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})});
+    const d=await r.json();
+    if(d.success){closeDetail();await loadAll();alert("✅ Javob yuborildi!");}
+    else alert("Xatolik: "+d.error);
+  }catch(e){alert("Server bilan bog'lanishda xatolik.")}
+}
+
+function renderBtnTree(){
+  const c=document.getElementById("btn-tree");
+  if(!configData||!configData.buttons){c.innerHTML='<p style="color:#9ca3af;padding:20px;font-size:13px;text-align:center">Tugmalar yuklanmadi</p>';return}
+  c.innerHTML="";
+  configData.buttons.forEach(b=>c.appendChild(mkNode(b)));
+}
+
+function mkNode(btn){
+  const wrap=document.createElement("div");
+  const tags={message:"tag-message",menu:"tag-menu",application:"tag-application"};
+  const tagLabels={message:"Xabar",menu:"Menyu",application:"Ariza"};
+  wrap.innerHTML=`<div class="btn-node">
+    <div class="btn-node-info">
+      <div class="btn-emoji">${btn.icon||"⬜"}</div>
+      <div>
+        <div class="btn-name">${btn.text}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:3px">
+          <span class="btn-type-tag ${tags[btn.type]||''}">${tagLabels[btn.type]||btn.type}</span>
+          ${btn.children&&btn.children.length?`<span style="font-size:11px;color:#9ca3af">${btn.children.length} ta ichki</span>`:''}
+        </div>
+        ${btn.message?`<div class="btn-msg">${btn.message.replace(/\n/g,' ')}</div>`:''}
+      </div>
+    </div>
+    <div class="btn-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openAdd('${btn.id}')"><i class="fa-solid fa-plus"></i> Ichiga</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEdit('${btn.id}')"><i class="fa-solid fa-pen"></i></button>
+      <button class="btn btn-danger btn-sm" onclick="delBtn('${btn.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  </div>`;
+  if(btn.children&&btn.children.length){
+    const cw=document.createElement("div");cw.className="child-wrap";
+    btn.children.forEach(ch=>cw.appendChild(mkNode(ch)));
+    wrap.appendChild(cw);
+  }
+  return wrap;
+}
+
+function buildGrid(sel){
+  document.getElementById("icon-grid").innerHTML=ICONS.map(ic=>
+    `<div class="ig-btn ${ic===sel?'sel':''}" onclick="pickIcon('${ic}')">${ic}</div>`).join("");
+}
+function pickIcon(ic){selIcon=ic;document.getElementById("custom-icon").value="";document.querySelectorAll(".ig-btn").forEach(e=>e.classList.toggle("sel",e.textContent.trim()===ic));updatePrev();}
+function setCI(v){selIcon=v.trim();document.querySelectorAll(".ig-btn").forEach(e=>e.classList.remove("sel"));updatePrev();}
+function updatePrev(){const t=document.getElementById("btn-text").value||"Tugma";document.getElementById("btn-prev").textContent=(selIcon+" "+t).trim();}
+function onType(){const t=document.getElementById("btn-type").value;document.getElementById("sec-field").style.display=t==="application"?"block":"none";}
+
+function openAdd(parentId){
+  editId=null;addParentId=parentId;selIcon="";
+  document.getElementById("bm-title").textContent=parentId?"Ichiga tugma qo'shish":"Yangi asosiy tugma";
+  document.getElementById("btn-text").value="";document.getElementById("btn-msg").value="";
+  document.getElementById("btn-sec").value="";document.getElementById("btn-type").value="message";
+  document.getElementById("custom-icon").value="";document.getElementById("btn-prev").textContent="—";
+  onType();buildGrid("");document.getElementById("btn-modal").classList.add("open");
+}
+
+function openEdit(id){
+  const btn=findBtn(configData.buttons,id);if(!btn)return;
+  editId=id;addParentId=null;selIcon=btn.icon||"";
+  document.getElementById("bm-title").textContent="Tugmani tahrirlash";
+  document.getElementById("btn-text").value=btn.text||"";
+  document.getElementById("btn-msg").value=btn.message||"";
+  document.getElementById("btn-sec").value=btn.section||"";
+  document.getElementById("btn-type").value=btn.type||"message";
+  document.getElementById("custom-icon").value=ICONS.includes(btn.icon)?"":(btn.icon||"");
+  onType();buildGrid(btn.icon);updatePrev();document.getElementById("btn-modal").classList.add("open");
+}
+
+function closeBM(){document.getElementById("btn-modal").classList.remove("open");editId=null;addParentId=null;}
+
+async function saveBtn(){
+  const text=document.getElementById("btn-text").value.trim();
+  if(!text){alert("Tugma matni bo'sh bo'lmasin!");return}
+  const payload={icon:selIcon,text,type:document.getElementById("btn-type").value,message:document.getElementById("btn-msg").value.trim(),section:document.getElementById("btn-sec").value.trim(),parent_id:addParentId||""};
+  try{
+    if(editId){await fetch(`${API}/buttons/${editId}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
+    else{await fetch(`${API}/buttons`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});}
+    closeBM();await loadAll();
+  }catch(e){alert("Server bilan bog'lanishda xatolik.")}
+}
+
+async function delBtn(id){
+  if(!confirm("Ushbu tugmani o'chirishni tasdiqlaysizmi?"))return;
+  try{await fetch(`${API}/buttons/${id}`,{method:"DELETE"});await loadAll();}catch(e){alert("Xatolik.")}
+}
+
+async function saveWelcome(){
+  const msg=document.getElementById("welcome-inp").value.trim();if(!msg)return;
+  try{
+    await fetch(`${API}/config/welcome`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:msg})});
+    alert("✅ Saqlandi!");
+  }catch(e){alert("Xatolik.")}
+}
+
+function findBtn(btns,id){for(const b of btns){if(b.id===id)return b;const f=findBtn(b.children||[],id);if(f)return f;}return null;}
+
+function exportExcel(type){
+  var data, sheetName, fileName;
+  if(type==='apps'){
+    data=allApps; sheetName="Arizalar"; fileName="arizalar";
+  } else if(type==='contacts'){
+    data=allContacts; sheetName="Murojaatlar"; fileName="murojaatlar";
+  } else {
+    data=allApps; sheetName="Dashboard"; fileName="dashboard";
+  }
+  if(!data||!data.length){alert("Malumot yoq!");return;}
+
+  var rows;
+  if(type==='contacts'){
+    rows=data.map(function(c){
+      return{
+        "#": c.id,
+        "Ism": c.tg_name||"",
+        "Telegram": "@"+(c.username||""),
+        "Telefon": c.phone||"",
+        "Xabar": c.text||"",
+        "Vaqt": c.time||"",
+        "Status": c.status==="new"?"Yangi":"Javob berildi"
+      };
+    });
+  } else {
+    rows=data.map(function(a){
+      return{
+        "#": a.id,
+        "Ism": a.name||a.tg_name||"",
+        "Telegram": "@"+(a.username||""),
+        "Telefon": a.phone||"",
+        "Malumot": a.info||"",
+        "Bolim": a.section||"",
+        "Filial": a.detail||"",
+        "Vaqt": a.time||"",
+        "Status": a.status==="pending"?"Kutilmoqda":a.status==="reviewed"?"Korildi":"Yakunlandi"
+      };
+    });
+  }
+
+  var ws = XLSX.utils.json_to_sheet(rows);
+
+  // Column widths
+  var cols = type==='contacts'
+    ? [{wch:5},{wch:20},{wch:18},{wch:16},{wch:40},{wch:18},{wch:16}]
+    : [{wch:5},{wch:22},{wch:18},{wch:16},{wch:30},{wch:18},{wch:22},{wch:18},{wch:14}];
+  ws['!cols'] = cols;
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, fileName+"_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+
+
+var editType=null, editItemId=null;
+
+function editRecord(type, id){
+  editType=type; editItemId=id;
+  if(type==='app'){
+    var item=allApps.find(function(a){return a.id===id;});
+    if(!item)return;
+    document.getElementById("em-title").textContent="Ariza #"+id+" tahrirlash";
+    document.getElementById("em-body").innerHTML=
+      '<div class="form-group"><label class="form-label">Ism</label><input type="text" id="e-name" value="'+escH(item.name||item.tg_name||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Telefon</label><input type="text" id="e-phone" value="'+escH(item.phone||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Malumot</label><textarea id="e-info">'+escH(item.info||'')+'</textarea></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select id="e-status" style="width:100%">'+
+        '<option value="pending"'+(item.status==='pending'?' selected':'')+'>Kutilmoqda</option>'+
+        '<option value="reviewed"'+(item.status==='reviewed'?' selected':'')+'>Korildi</option>'+
+        '<option value="completed"'+(item.status==='completed'?' selected':'')+'>Yakunlandi</option>'+
+      '</select></div>';
+  } else {
+    var item=allContacts.find(function(c){return c.id===id;});
+    if(!item)return;
+    document.getElementById("em-title").textContent="Murojaat #"+id+" tahrirlash";
+    document.getElementById("em-body").innerHTML=
+      '<div class="form-group"><label class="form-label">Telefon</label><input type="text" id="e-phone" value="'+escH(item.phone||'')+'"></div>'+
+      '<div class="form-group"><label class="form-label">Xabar</label><textarea id="e-info">'+escH(item.text||'')+'</textarea></div>'+
+      '<div class="form-group"><label class="form-label">Status</label><select id="e-status" style="width:100%">'+
+        '<option value="new"'+(item.status==='new'?' selected':'')+'>Yangi</option>'+
+        '<option value="replied"'+((item.status||'')==='replied'?' selected':'')+'>Javob berildi</option>'+
+      '</select></div>';
+  }
+  document.getElementById("edit-modal").classList.add("open");
+}
+
+function escH(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function saveEdit(){
+  try{
+    if(editType==='app'){
+      var payload={
+        name: document.getElementById("e-name").value.trim(),
+        phone: document.getElementById("e-phone").value.trim(),
+        info: document.getElementById("e-info").value.trim(),
+        status: document.getElementById("e-status").value
+      };
+      await fetch(API+"/applications/"+editItemId+"/edit",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    } else {
+      var payload={
+        phone: document.getElementById("e-phone").value.trim(),
+        text: document.getElementById("e-info").value.trim(),
+        status: document.getElementById("e-status").value
+      };
+      await fetch(API+"/contacts/"+editItemId+"/edit",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    }
+    closeEdit();
+    await loadAll();
+  }catch(e){alert("Xatolik: server bilan aloqa yo'q");}
+}
+
+function closeEdit(){document.getElementById("edit-modal").classList.remove("open");editType=null;editItemId=null;}
+
+async function deleteRecord(type, id){
+  var msg = type==='app' ? "Ariza #"+id+" o'chirilsinmi?" : "Murojaat #"+id+" o'chirilsinmi?";
+  if(!confirm(msg)) return;
+  try{
+    var url = type==='app' ? API+"/applications/"+id : API+"/contacts/"+id;
+    var r = await fetch(url,{method:"DELETE"});
+    var d = await r.json();
+    if(d.success){ await loadAll(); }
+    else alert("Xatolik: "+d.error);
+  }catch(e){alert("Server bilan aloqa yo'q");}
+}
+
+loadAll();
+setInterval(loadAll,30000);
+</script>
+
+<!-- EDIT MODAL -->
+<div class="overlay" id="edit-modal">
+  <div class="modal">
+    <h3 id="em-title">Tahrirlash</h3>
+    <div id="em-body"></div>
+    <div class="modal-footer" style="margin-top:20px">
+      <button class="btn btn-dark" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+      <button class="btn btn-ghost" onclick="closeEdit()">Bekor</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
