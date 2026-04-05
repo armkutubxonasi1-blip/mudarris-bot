@@ -171,20 +171,23 @@ def edit_contact(contact_id):
 def delete_contact(contact_id):
     data=load_data()
     for i,c in enumerate(data.get("contacts",[])):
-        if c["id"]==contact_id:
-            data["contacts"].pop(i); save_data(data); return jsonify({"success":True})
+        if c["id"]==contact_id: data["contacts"].pop(i); save_data(data); return jsonify({"success":True})
     return jsonify({"error":"Topilmadi"}),404
 
-@flask_app.route("/api/buttons",methods=["GET"])
-def get_buttons():
-    config=load_config(); return jsonify(config)
+@flask_app.route("/api/config",methods=["GET"])
+def get_config(): return jsonify(load_config())
+
+@flask_app.route("/api/config/welcome",methods=["PUT"])
+def update_welcome():
+    config=load_config(); config["welcome_message"]=request.json.get("message",config["welcome_message"])
+    save_config(config); return jsonify({"success":True})
 
 @flask_app.route("/api/buttons",methods=["POST"])
 def add_button():
-    config=load_config(); d=request.json; icon=d.get("icon",""); text=d.get("text","")
-    new_btn={"id":uuid.uuid4().hex[:8],"label":(icon+" "+text).strip(),"icon":icon,"text":text,
-             "type":d.get("type","message"),"message":d.get("message",""),
-             "section":d.get("section",""),"children":[]}
+    config=load_config(); d=request.json
+    new_btn={"id":str(uuid.uuid4())[:8],"label":(d.get("icon","")+' '+d.get("text","")).strip(),
+             "icon":d.get("icon",""),"text":d.get("text","Yangi tugma"),"type":d.get("type","message"),
+             "message":d.get("message",""),"section":d.get("section",""),"children":[]}
     parent_id=d.get("parent_id","")
     if parent_id: find_parent_and_add(config["buttons"],parent_id,new_btn)
     else: config["buttons"].append(new_btn)
@@ -209,14 +212,10 @@ tg_bot  = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp      = Dispatcher(storage=storage)
 
-# ── 6-bosqichli ariza shakli ──────────────────────────────────────────
 class AppForm(StatesGroup):
-    waiting_name   = State()   # 1. Ism Familiya
-    waiting_phone  = State()   # 2. Telefon raqam
-    waiting_age    = State()   # 3. Yosh
-    waiting_exp    = State()   # 4. Tajriba (yil)
-    waiting_cv     = State()   # 5. CV (PDF yoki foto)
-    waiting_note   = State()   # 6. Qo'shimcha izoh (ixtiyoriy)
+    waiting_name  = State()
+    waiting_info  = State()
+    waiting_phone = State()
 
 class ContactForm(StatesGroup):
     waiting_text  = State()
@@ -249,39 +248,16 @@ def make_keyboard(buttons,extra_back=False):
     if extra_back: rows.append([KeyboardButton(text="⬅️ Orqaga")])
     return ReplyKeyboardMarkup(keyboard=rows,resize_keyboard=True)
 
-def make_skip_keyboard():
-    """Ixtiyoriy bosqich uchun 'O'tkazib yuborish' tugmasi"""
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="⏩ O'tkazib yuborish")]],
-        resize_keyboard=True
-    )
-
-def save_application(user, section, detail, name, phone, age, experience, cv_file_id, cv_type, note):
-    data = load_data()
-    app = {
-        "id": len(data["applications"]) + 1,
-        "user_id": user.id,
-        "tg_name": f"{user.first_name or ''} {user.last_name or ''}".strip(),
-        "username": user.username or "",
-        "name": name,
-        "phone": phone,
-        "age": age,
-        "experience": experience,
-        "cv_file_id": cv_file_id,
-        "cv_type": cv_type,       # "document" | "photo" | "none"
-        "note": note,
-        "info": f"Yosh: {age} | Tajriba: {experience} yil",  # admin panel uchun qisqacha
-        "section": section,
-        "detail": detail,
-        "time": datetime.now().strftime("%H:%M, %d-%B"),
-        "status": "pending",
-        "replies": []
-    }
+def save_application(user,section,detail,name,info,phone):
+    data=load_data()
+    app={"id":len(data["applications"])+1,"user_id":user.id,
+         "tg_name":f"{user.first_name or ''} {user.last_name or ''}".strip(),
+         "username":user.username or "","name":name,"info":info,"phone":phone,
+         "section":section,"detail":detail,"time":datetime.now().strftime("%H:%M, %d-%B"),
+         "status":"pending","replies":[]}
     data["applications"].append(app)
-    data["stats"]["total"] += 1
-    data["stats"]["pending"] += 1
-    save_data(data)
-    return app["id"]
+    data["stats"]["total"]+=1; data["stats"]["pending"]+=1
+    save_data(data); return app["id"]
 
 def save_contact(user,text,phone):
     data=load_data()
@@ -291,160 +267,35 @@ def save_contact(user,text,phone):
              "time":datetime.now().strftime("%H:%M, %d-%B"),"status":"new","replies":[]}
     data["contacts"].append(contact); save_data(data); return contact["id"]
 
-# ── /start ─────────────────────────────────────────────────────────────
 @dp.message(CommandStart())
 async def start_command(message:types.Message,state:FSMContext):
     await state.clear(); config=load_config()
     await message.answer(config.get("welcome_message","Xush kelibsiz!"),reply_markup=make_keyboard(config["buttons"]))
 
-# ── Orqaga ─────────────────────────────────────────────────────────────
 @dp.message(F.text=="⬅️ Orqaga")
 async def back_to_main(message:types.Message,state:FSMContext):
     await state.clear(); config=load_config()
     await message.answer("Asosiy menyuga qaytdingiz:",reply_markup=make_keyboard(config["buttons"]))
 
-# ══════════════════════════════════════════════════════════════════════
-#  ARIZA BOSQICHLARI
-# ══════════════════════════════════════════════════════════════════════
-
-# 1-bosqich: Ism Familiya
 @dp.message(AppForm.waiting_name)
 async def get_name(message:types.Message,state:FSMContext):
-    if not message.text:
-        await message.answer("✍️ Iltimos, ism va familiyangizni matn ko'rinishida yozing:"); return
-    await state.update_data(name=message.text.strip())
-    await state.set_state(AppForm.waiting_phone)
-    await message.answer(
-        "📱 2-qadam: Telefon raqamingizni yozing:\n"
-        "Masalan: <b>+998901234567</b>",
-        parse_mode="HTML"
-    )
+    await state.update_data(name=message.text.strip()); await state.set_state(AppForm.waiting_info)
+    await message.answer("📝 O'zingiz haqingizda qisqacha ma'lumot yozing:\n(tajriba, mutaxassislik, yosh va h.k.)")
 
-# 2-bosqich: Telefon raqam
+@dp.message(AppForm.waiting_info)
+async def get_info(message:types.Message,state:FSMContext):
+    await state.update_data(info=message.text.strip()); await state.set_state(AppForm.waiting_phone)
+    await message.answer("📱 Telefon raqamingizni yozing:\nMasalan: +998901234567")
+
 @dp.message(AppForm.waiting_phone)
 async def get_phone_app(message:types.Message,state:FSMContext):
-    if not message.text:
-        await message.answer("📱 Iltimos, telefon raqamingizni yozing:"); return
-    await state.update_data(phone=message.text.strip())
-    await state.set_state(AppForm.waiting_age)
+    d=await state.get_data()
+    app_id=save_application(message.from_user,d["section"],d["detail"],d["name"],d["info"],message.text.strip())
+    await state.clear(); config=load_config()
     await message.answer(
-        "🎂 3-qadam: Yoshingizni yozing:\n"
-        "Masalan: <b>25</b>",
-        parse_mode="HTML"
-    )
-
-# 3-bosqich: Yosh
-@dp.message(AppForm.waiting_age)
-async def get_age(message:types.Message,state:FSMContext):
-    if not message.text:
-        await message.answer("🎂 Iltimos, yoshingizni yozing:"); return
-    await state.update_data(age=message.text.strip())
-    await state.set_state(AppForm.waiting_exp)
-    await message.answer(
-        "💼 4-qadam: Ish tajribangizni yozing (yillarda):\n"
-        "Masalan: <b>3 yil</b>  yoki  <b>Tajribam yo'q</b>",
-        parse_mode="HTML"
-    )
-
-# 4-bosqich: Tajriba
-@dp.message(AppForm.waiting_exp)
-async def get_experience(message:types.Message,state:FSMContext):
-    if not message.text:
-        await message.answer("💼 Iltimos, tajribangizni yozing:"); return
-    await state.update_data(experience=message.text.strip())
-    await state.set_state(AppForm.waiting_cv)
-    await message.answer(
-        "📎 5-qadam: CV yuboring (PDF fayl yoki rasm sifatida):\n\n"
-        "• PDF hujjat sifatida yuboring\n"
-        "• Yoki CV rasmini yuboring\n\n"
-        "Agar CV yo'q bo'lsa — <b>⏩ O'tkazib yuborish</b> tugmasini bosing.",
-        parse_mode="HTML",
-        reply_markup=make_skip_keyboard()
-    )
-
-# 5-bosqich: CV (hujjat, rasm yoki o'tkazib yuborish)
-@dp.message(AppForm.waiting_cv, F.document)
-async def get_cv_document(message:types.Message,state:FSMContext):
-    await state.update_data(cv_file_id=message.document.file_id, cv_type="document")
-    await state.set_state(AppForm.waiting_note)
-    await message.answer(
-        "✅ CV qabul qilindi!\n\n"
-        "💬 6-qadam: O'zingiz haqingizda qo'shimcha ma'lumot yozing yoki izoh qoldiring:\n"
-        "<i>(Bu bosqich ixtiyoriy — o'tkazib yuborishingiz mumkin)</i>",
-        parse_mode="HTML",
-        reply_markup=make_skip_keyboard()
-    )
-
-@dp.message(AppForm.waiting_cv, F.photo)
-async def get_cv_photo(message:types.Message,state:FSMContext):
-    await state.update_data(cv_file_id=message.photo[-1].file_id, cv_type="photo")
-    await state.set_state(AppForm.waiting_note)
-    await message.answer(
-        "✅ CV rasmi qabul qilindi!\n\n"
-        "💬 6-qadam: O'zingiz haqingizda qo'shimcha ma'lumot yozing yoki izoh qoldiring:\n"
-        "<i>(Bu bosqich ixtiyoriy — o'tkazib yuborishingiz mumkin)</i>",
-        parse_mode="HTML",
-        reply_markup=make_skip_keyboard()
-    )
-
-@dp.message(AppForm.waiting_cv)
-async def get_cv_skip(message:types.Message,state:FSMContext):
-    # "O'tkazib yuborish" tugmasi yoki boshqa matn
-    await state.update_data(cv_file_id=None, cv_type="none")
-    await state.set_state(AppForm.waiting_note)
-    await message.answer(
-        "💬 6-qadam: O'zingiz haqingizda qo'shimcha ma'lumot yozing yoki izoh qoldiring:\n"
-        "<i>(Bu bosqich ixtiyoriy — o'tkazib yuborishingiz mumkin)</i>",
-        parse_mode="HTML",
-        reply_markup=make_skip_keyboard()
-    )
-
-# 6-bosqich: Qo'shimcha izoh
-@dp.message(AppForm.waiting_note)
-async def get_note(message:types.Message,state:FSMContext):
-    note = ""
-    if message.text and message.text.strip() != "⏩ O'tkazib yuborish":
-        note = message.text.strip()
-
-    d = await state.get_data()
-    app_id = save_application(
-        user=message.from_user,
-        section=d.get("section",""),
-        detail=d.get("detail",""),
-        name=d.get("name",""),
-        phone=d.get("phone",""),
-        age=d.get("age",""),
-        experience=d.get("experience",""),
-        cv_file_id=d.get("cv_file_id"),
-        cv_type=d.get("cv_type","none"),
-        note=note
-    )
-
-    await state.clear()
-    config = load_config()
-
-    cv_status = "✅ Yuklandi" if d.get("cv_type") != "none" else "➖ Yuklanmagan"
-    note_text = note if note else "➖ Izoh qoldirilmagan"
-
-    await message.answer(
-        f"🎉 Arizangiz muvaffaqiyatli qabul qilindi!\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"👤 Ism Familiya: {d.get('name','')}\n"
-        f"📱 Telefon: {d.get('phone','')}\n"
-        f"🎂 Yosh: {d.get('age','')}\n"
-        f"💼 Tajriba: {d.get('experience','')}\n"
-        f"📎 CV: {cv_status}\n"
-        f"💬 Izoh: {note_text}\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"🆔 Ariza raqami: <b>#{app_id}</b>\n\n"
-        f"Mutaxassislarimiz tez orada bog'lanishadi! 🙏",
-        parse_mode="HTML",
-        reply_markup=make_keyboard(config["buttons"])
-    )
-
-# ══════════════════════════════════════════════════════════════════════
-#  BOG'LANISH BOSQICHLARI
-# ══════════════════════════════════════════════════════════════════════
+        f"✅ Arizangiz qabul qilindi!\n\n👤 Ism: {d['name']}\n📝 Ma'lumot: {d['info']}\n"
+        f"📱 Telefon: {message.text.strip()}\n🆔 Ariza raqami: #{app_id}\n\nMutaxassislarimiz tez orada bog'lanishadi.",
+        reply_markup=make_keyboard(config["buttons"]))
 
 @dp.message(ContactForm.waiting_text)
 async def get_contact_text(message:types.Message,state:FSMContext):
@@ -460,10 +311,6 @@ async def get_phone_contact(message:types.Message,state:FSMContext):
         f"✅ Xabaringiz qabul qilindi!\n\n📱 Raqam: {message.text.strip()}\n"
         f"🆔 Murojaat raqami: #{contact_id}\n\nTez orada javob beramiz!",
         reply_markup=make_keyboard(config["buttons"]))
-
-# ══════════════════════════════════════════════════════════════════════
-#  ASOSIY XABARLARNI QAYTA ISHLASH
-# ══════════════════════════════════════════════════════════════════════
 
 @dp.message(StateFilter(default_state))
 async def handle_any(message:types.Message,state:FSMContext):
@@ -488,13 +335,7 @@ async def handle_any(message:types.Message,state:FSMContext):
     elif btn.get("type")=="application":
         await state.update_data(current_menu_id=None,section=btn.get("section",btn["text"]),detail=btn["text"])
         await state.set_state(AppForm.waiting_name)
-        await message.answer(
-            f"📋 <b>Ariza to'ldirish</b>\n\n"
-            f"📌 Bo'lim: {btn['text']}\n\n"
-            f"👤 1-qadam: Ism va familiyangizni yozing:",
-            parse_mode="HTML",
-            reply_markup=ReplyKeyboardRemove()
-        )
+        await message.answer(f"📋 Ariza to'ldirish\n\nBo'lim: {btn['text']}\n\n👤 Ism va familiyangizni yozing:",reply_markup=ReplyKeyboardRemove())
     else:
         await state.update_data(current_menu_id=None)
         txt=btn.get("message","").strip()
