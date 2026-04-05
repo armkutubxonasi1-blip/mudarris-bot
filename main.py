@@ -3,9 +3,10 @@ import threading
 import json
 import os
 import uuid
+import requests as req_lib
 from datetime import datetime
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, Response
 from flask_cors import CORS
 
 from aiogram import Bot, Dispatcher, types, F
@@ -25,7 +26,7 @@ DATA_FILE   = "data.json"
 CONFIG_FILE = "config.json"
 PORT        = int(os.environ.get("PORT", 5000))
 
-# ── Flask ─────────────────────────────────────────────────────────────
+# ── Flask ──────────────────────────────────────────────────────────────
 flask_app = Flask(__name__, static_folder=".")
 CORS(flask_app)
 
@@ -66,6 +67,7 @@ def find_parent_and_add(buttons,parent_id,new_btn):
 
 bot_loop = None
 
+# ── Flask routes ───────────────────────────────────────────────────────
 @flask_app.route("/")
 def index(): return send_from_directory(".","admin.html")
 
@@ -133,9 +135,8 @@ def edit_application(app_id):
     data=load_data(); d=request.json
     for a in data.get("applications",[]):
         if a["id"]==app_id:
-            if "name" in d: a["name"]=d["name"]
-            if "phone" in d: a["phone"]=d["phone"]
-            if "info" in d: a["info"]=d["info"]
+            for field in ["name","phone","age","experience","note","info"]:
+                if field in d: a[field]=d[field]
             if "status" in d:
                 old,new_s=a["status"],d["status"]
                 if old!=new_s:
@@ -171,7 +172,8 @@ def edit_contact(contact_id):
 def delete_contact(contact_id):
     data=load_data()
     for i,c in enumerate(data.get("contacts",[])):
-        if c["id"]==contact_id: data["contacts"].pop(i); save_data(data); return jsonify({"success":True})
+        if c["id"]==contact_id:
+            data["contacts"].pop(i); save_data(data); return jsonify({"success":True})
     return jsonify({"error":"Topilmadi"}),404
 
 @flask_app.route("/api/config",methods=["GET"])
@@ -179,15 +181,18 @@ def get_config(): return jsonify(load_config())
 
 @flask_app.route("/api/config/welcome",methods=["PUT"])
 def update_welcome():
-    config=load_config(); config["welcome_message"]=request.json.get("message",config["welcome_message"])
+    config=load_config(); config["welcome_message"]=request.json.get("message","")
     save_config(config); return jsonify({"success":True})
+
+@flask_app.route("/api/buttons",methods=["GET"])
+def get_buttons(): return jsonify(load_config())
 
 @flask_app.route("/api/buttons",methods=["POST"])
 def add_button():
-    config=load_config(); d=request.json
-    new_btn={"id":str(uuid.uuid4())[:8],"label":(d.get("icon","")+' '+d.get("text","")).strip(),
-             "icon":d.get("icon",""),"text":d.get("text","Yangi tugma"),"type":d.get("type","message"),
-             "message":d.get("message",""),"section":d.get("section",""),"children":[]}
+    config=load_config(); d=request.json; icon=d.get("icon",""); text=d.get("text","")
+    new_btn={"id":uuid.uuid4().hex[:8],"label":(icon+" "+text).strip(),"icon":icon,"text":text,
+             "type":d.get("type","message"),"message":d.get("message",""),
+             "section":d.get("section",""),"children":[]}
     parent_id=d.get("parent_id","")
     if parent_id: find_parent_and_add(config["buttons"],parent_id,new_btn)
     else: config["buttons"].append(new_btn)
@@ -207,15 +212,47 @@ def delete_button(btn_id):
     if find_and_delete(config["buttons"],btn_id): save_config(config); return jsonify({"success":True})
     return jsonify({"error":"Topilmadi"}),404
 
-# ── Bot ───────────────────────────────────────────────────────────────
+# ── CV endpoint: Telegram'dan faylni proxy qilib ko'rsatadi ───────────
+@flask_app.route("/api/cv/<file_id>")
+def get_cv(file_id):
+    try:
+        r = req_lib.get(
+            f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}",
+            timeout=10
+        )
+        data = r.json()
+        if not data.get("ok"):
+            return jsonify({"error": "Fayl topilmadi"}), 404
+        file_path = data["result"]["file_path"]
+        file_url  = f"https://api.telegram.org/file/bot{TOKEN}/{file_path}"
+        file_resp = req_lib.get(file_url, timeout=30)
+        ext = file_path.split(".")[-1].lower()
+        ct_map = {
+            "pdf":"application/pdf",
+            "jpg":"image/jpeg","jpeg":"image/jpeg",
+            "png":"image/png","webp":"image/webp",
+        }
+        ct = ct_map.get(ext, "application/octet-stream")
+        return Response(
+            file_resp.content,
+            content_type=ct,
+            headers={"Content-Disposition": f"inline; filename=cv.{ext}"}
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Bot ────────────────────────────────────────────────────────────────
 tg_bot  = Bot(token=TOKEN)
 storage = MemoryStorage()
 dp      = Dispatcher(storage=storage)
 
 class AppForm(StatesGroup):
     waiting_name  = State()
-    waiting_info  = State()
     waiting_phone = State()
+    waiting_age   = State()
+    waiting_exp   = State()
+    waiting_cv    = State()
+    waiting_note  = State()
 
 class ContactForm(StatesGroup):
     waiting_text  = State()
@@ -225,139 +262,274 @@ async def _send_msg(user_id, text):
     try: await tg_bot.send_message(user_id, text)
     except Exception as e: print(f"Send error: {e}")
 
-def find_by_id(buttons,btn_id):
+def find_by_id(buttons, btn_id):
     for btn in buttons:
-        if btn.get("id")==btn_id: return btn
-        found=find_by_id(btn.get("children",[]),btn_id)
+        if btn.get("id") == btn_id: return btn
+        found = find_by_id(btn.get("children",[]), btn_id)
         if found: return found
     return None
 
-def find_by_label(buttons,label):
+def find_by_label(buttons, label):
     for btn in buttons:
-        if btn.get("label")==label: return btn
-        found=find_by_label(btn.get("children",[]),label)
+        if btn.get("label") == label: return btn
+        found = find_by_label(btn.get("children",[]), label)
         if found: return found
     return None
 
-def make_keyboard(buttons,extra_back=False):
-    rows,row=[],[]
+def make_keyboard(buttons, extra_back=False):
+    rows, row = [], []
     for btn in buttons:
         row.append(KeyboardButton(text=btn["label"]))
-        if len(row)==2: rows.append(row); row=[]
+        if len(row) == 2: rows.append(row); row = []
     if row: rows.append(row)
     if extra_back: rows.append([KeyboardButton(text="⬅️ Orqaga")])
-    return ReplyKeyboardMarkup(keyboard=rows,resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
-def save_application(user,section,detail,name,info,phone):
-    data=load_data()
-    app={"id":len(data["applications"])+1,"user_id":user.id,
-         "tg_name":f"{user.first_name or ''} {user.last_name or ''}".strip(),
-         "username":user.username or "","name":name,"info":info,"phone":phone,
-         "section":section,"detail":detail,"time":datetime.now().strftime("%H:%M, %d-%B"),
-         "status":"pending","replies":[]}
+def make_skip_kb():
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="⏩ O'tkazib yuborish")]],
+        resize_keyboard=True
+    )
+
+def save_application(user, section, detail, name, phone, age, exp, cv_file_id, cv_type, note):
+    data = load_data()
+    app = {
+        "id": len(data["applications"]) + 1,
+        "user_id": user.id,
+        "tg_name": f"{user.first_name or ''} {user.last_name or ''}".strip(),
+        "username": user.username or "",
+        "name": name, "phone": phone,
+        "age": age, "experience": exp,
+        "cv_file_id": cv_file_id, "cv_type": cv_type,
+        "note": note,
+        "info": f"Yosh: {age} | Tajriba: {exp}",
+        "section": section, "detail": detail,
+        "time": datetime.now().strftime("%H:%M, %d-%B"),
+        "status": "pending", "replies": []
+    }
     data["applications"].append(app)
-    data["stats"]["total"]+=1; data["stats"]["pending"]+=1
-    save_data(data); return app["id"]
+    data["stats"]["total"] += 1
+    data["stats"]["pending"] += 1
+    save_data(data)
+    return app["id"]
 
-def save_contact(user,text,phone):
-    data=load_data()
-    contact={"id":len(data["contacts"])+1,"user_id":user.id,
-             "tg_name":f"{user.first_name or ''} {user.last_name or ''}".strip(),
-             "username":user.username or "","text":text,"phone":phone,
-             "time":datetime.now().strftime("%H:%M, %d-%B"),"status":"new","replies":[]}
-    data["contacts"].append(contact); save_data(data); return contact["id"]
+def save_contact(user, text, phone):
+    data = load_data()
+    contact = {
+        "id": len(data["contacts"]) + 1,
+        "user_id": user.id,
+        "tg_name": f"{user.first_name or ''} {user.last_name or ''}".strip(),
+        "username": user.username or "",
+        "text": text, "phone": phone,
+        "time": datetime.now().strftime("%H:%M, %d-%B"),
+        "status": "new", "replies": []
+    }
+    data["contacts"].append(contact)
+    save_data(data)
+    return contact["id"]
 
+# ── /start ──────────────────────────────────────────────────────────────
 @dp.message(CommandStart())
-async def start_command(message:types.Message,state:FSMContext):
-    await state.clear(); config=load_config()
-    await message.answer(config.get("welcome_message","Xush kelibsiz!"),reply_markup=make_keyboard(config["buttons"]))
+async def start_command(message: types.Message, state: FSMContext):
+    await state.clear()
+    config = load_config()
+    await message.answer(config.get("welcome_message","Xush kelibsiz!"), reply_markup=make_keyboard(config["buttons"]))
 
-@dp.message(F.text=="⬅️ Orqaga")
-async def back_to_main(message:types.Message,state:FSMContext):
-    await state.clear(); config=load_config()
-    await message.answer("Asosiy menyuga qaytdingiz:",reply_markup=make_keyboard(config["buttons"]))
+@dp.message(F.text == "⬅️ Orqaga")
+async def back_to_main(message: types.Message, state: FSMContext):
+    await state.clear()
+    config = load_config()
+    await message.answer("Asosiy menyuga qaytdingiz:", reply_markup=make_keyboard(config["buttons"]))
 
+# 1. Ism
 @dp.message(AppForm.waiting_name)
-async def get_name(message:types.Message,state:FSMContext):
-    await state.update_data(name=message.text.strip()); await state.set_state(AppForm.waiting_info)
-    await message.answer("📝 O'zingiz haqingizda qisqacha ma'lumot yozing:\n(tajriba, mutaxassislik, yosh va h.k.)")
+async def get_name(message: types.Message, state: FSMContext):
+    if not message.text:
+        await message.answer("✍️ Iltimos, ism va familiyangizni yozing:"); return
+    await state.update_data(name=message.text.strip())
+    await state.set_state(AppForm.waiting_phone)
+    await message.answer("📱 <b>2-qadam:</b> Telefon raqamingizni yozing:\nMasalan: +998901234567", parse_mode="HTML")
 
-@dp.message(AppForm.waiting_info)
-async def get_info(message:types.Message,state:FSMContext):
-    await state.update_data(info=message.text.strip()); await state.set_state(AppForm.waiting_phone)
-    await message.answer("📱 Telefon raqamingizni yozing:\nMasalan: +998901234567")
-
+# 2. Telefon
 @dp.message(AppForm.waiting_phone)
-async def get_phone_app(message:types.Message,state:FSMContext):
-    d=await state.get_data()
-    app_id=save_application(message.from_user,d["section"],d["detail"],d["name"],d["info"],message.text.strip())
-    await state.clear(); config=load_config()
-    await message.answer(
-        f"✅ Arizangiz qabul qilindi!\n\n👤 Ism: {d['name']}\n📝 Ma'lumot: {d['info']}\n"
-        f"📱 Telefon: {message.text.strip()}\n🆔 Ariza raqami: #{app_id}\n\nMutaxassislarimiz tez orada bog'lanishadi.",
-        reply_markup=make_keyboard(config["buttons"]))
+async def get_phone(message: types.Message, state: FSMContext):
+    if not message.text:
+        await message.answer("📱 Iltimos, telefon raqamingizni yozing:"); return
+    await state.update_data(phone=message.text.strip())
+    await state.set_state(AppForm.waiting_age)
+    await message.answer("🎂 <b>3-qadam:</b> Yoshingizni yozing:\nMasalan: <b>25</b>", parse_mode="HTML")
 
+# 3. Yosh
+@dp.message(AppForm.waiting_age)
+async def get_age(message: types.Message, state: FSMContext):
+    if not message.text:
+        await message.answer("🎂 Iltimos, yoshingizni yozing:"); return
+    await state.update_data(age=message.text.strip())
+    await state.set_state(AppForm.waiting_exp)
+    await message.answer(
+        "💼 <b>4-qadam:</b> Ish tajribangizni yozing:\nMasalan: <b>3 yil</b>  yoki  <b>Tajribam yo'q</b>",
+        parse_mode="HTML"
+    )
+
+# 4. Tajriba
+@dp.message(AppForm.waiting_exp)
+async def get_exp(message: types.Message, state: FSMContext):
+    if not message.text:
+        await message.answer("💼 Iltimos, tajribangizni yozing:"); return
+    await state.update_data(experience=message.text.strip())
+    await state.set_state(AppForm.waiting_cv)
+    await message.answer(
+        "📎 <b>5-qadam:</b> CV yuboring:\n\n"
+        "• <b>PDF</b> hujjat sifatida yuboring\n"
+        "• Yoki CV <b>rasmini</b> yuboring\n\n"
+        "CV yo'q bo'lsa — <b>⏩ O'tkazib yuborish</b> tugmasini bosing.",
+        parse_mode="HTML",
+        reply_markup=make_skip_kb()
+    )
+
+# 5a. CV hujjat
+@dp.message(AppForm.waiting_cv, F.document)
+async def get_cv_doc(message: types.Message, state: FSMContext):
+    await state.update_data(cv_file_id=message.document.file_id, cv_type="document")
+    await state.set_state(AppForm.waiting_note)
+    await message.answer(
+        "✅ CV qabul qilindi!\n\n"
+        "💬 <b>6-qadam:</b> Qo'shimcha ma'lumot yoki izoh:\n"
+        "<i>(ixtiyoriy)</i>",
+        parse_mode="HTML", reply_markup=make_skip_kb()
+    )
+
+# 5b. CV rasm
+@dp.message(AppForm.waiting_cv, F.photo)
+async def get_cv_photo(message: types.Message, state: FSMContext):
+    await state.update_data(cv_file_id=message.photo[-1].file_id, cv_type="photo")
+    await state.set_state(AppForm.waiting_note)
+    await message.answer(
+        "✅ CV rasmi qabul qilindi!\n\n"
+        "💬 <b>6-qadam:</b> Qo'shimcha ma'lumot yoki izoh:\n"
+        "<i>(ixtiyoriy)</i>",
+        parse_mode="HTML", reply_markup=make_skip_kb()
+    )
+
+# 5c. CV o'tkazib yuborish
+@dp.message(AppForm.waiting_cv)
+async def get_cv_skip(message: types.Message, state: FSMContext):
+    await state.update_data(cv_file_id=None, cv_type="none")
+    await state.set_state(AppForm.waiting_note)
+    await message.answer(
+        "💬 <b>6-qadam:</b> Qo'shimcha ma'lumot yoki izoh:\n<i>(ixtiyoriy)</i>",
+        parse_mode="HTML", reply_markup=make_skip_kb()
+    )
+
+# 6. Izoh — yakunlash
+@dp.message(AppForm.waiting_note)
+async def get_note(message: types.Message, state: FSMContext):
+    note = ""
+    if message.text and message.text.strip() != "⏩ O'tkazib yuborish":
+        note = message.text.strip()
+    d = await state.get_data()
+    app_id = save_application(
+        user=message.from_user,
+        section=d.get("section",""), detail=d.get("detail",""),
+        name=d.get("name",""), phone=d.get("phone",""),
+        age=d.get("age",""), exp=d.get("experience",""),
+        cv_file_id=d.get("cv_file_id"), cv_type=d.get("cv_type","none"),
+        note=note
+    )
+    await state.clear()
+    config = load_config()
+    cv_status = "✅ Yuklandi" if d.get("cv_type") != "none" else "➖ Yuklanmagan"
+    await message.answer(
+        f"🎉 <b>Arizangiz qabul qilindi!</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━\n"
+        f"👤 Ism: {d.get('name','')}\n"
+        f"📱 Telefon: {d.get('phone','')}\n"
+        f"🎂 Yosh: {d.get('age','')}\n"
+        f"💼 Tajriba: {d.get('experience','')}\n"
+        f"📎 CV: {cv_status}\n"
+        f"💬 Izoh: {note or '➖'}\n"
+        f"━━━━━━━━━━━━━━━━━\n"
+        f"🆔 Ariza raqami: <b>#{app_id}</b>\n\n"
+        f"Mutaxassislarimiz tez orada bog'lanishadi! 🙏",
+        parse_mode="HTML",
+        reply_markup=make_keyboard(config["buttons"])
+    )
+
+# ── Bog'lanish ─────────────────────────────────────────────────────────
 @dp.message(ContactForm.waiting_text)
-async def get_contact_text(message:types.Message,state:FSMContext):
-    await state.update_data(contact_text=message.text.strip()); await state.set_state(ContactForm.waiting_phone)
+async def get_contact_text(message: types.Message, state: FSMContext):
+    await state.update_data(contact_text=message.text.strip())
+    await state.set_state(ContactForm.waiting_phone)
     await message.answer("📱 Telefon raqamingizni yozing:\nMasalan: +998901234567")
 
 @dp.message(ContactForm.waiting_phone)
-async def get_phone_contact(message:types.Message,state:FSMContext):
-    d=await state.get_data()
-    contact_id=save_contact(message.from_user,d["contact_text"],message.text.strip())
-    await state.clear(); config=load_config()
+async def get_phone_contact(message: types.Message, state: FSMContext):
+    d = await state.get_data()
+    contact_id = save_contact(message.from_user, d["contact_text"], message.text.strip())
+    await state.clear()
+    config = load_config()
     await message.answer(
         f"✅ Xabaringiz qabul qilindi!\n\n📱 Raqam: {message.text.strip()}\n"
         f"🆔 Murojaat raqami: #{contact_id}\n\nTez orada javob beramiz!",
-        reply_markup=make_keyboard(config["buttons"]))
+        reply_markup=make_keyboard(config["buttons"])
+    )
 
+# ── Asosiy handler ─────────────────────────────────────────────────────
 @dp.message(StateFilter(default_state))
-async def handle_any(message:types.Message,state:FSMContext):
+async def handle_any(message: types.Message, state: FSMContext):
     if not message.text: return
-    config=load_config(); fsm_data=await state.get_data(); current_menu_id=fsm_data.get("current_menu_id")
-    btn=None
+    config = load_config()
+    fsm_data = await state.get_data()
+    current_menu_id = fsm_data.get("current_menu_id")
+    btn = None
     if current_menu_id:
-        parent=find_by_id(config["buttons"],current_menu_id)
+        parent = find_by_id(config["buttons"], current_menu_id)
         if parent and parent.get("children"):
             for child in parent["children"]:
-                if child.get("label")==message.text: btn=child; break
-    if not btn: btn=find_by_label(config["buttons"],message.text)
+                if child.get("label") == message.text: btn = child; break
+    if not btn: btn = find_by_label(config["buttons"], message.text)
     if not btn: return
-    children=btn.get("children",[])
+    children = btn.get("children", [])
     if "bog'laning" in btn.get("text","").lower():
-        await state.update_data(current_menu_id=None); await state.set_state(ContactForm.waiting_text)
-        await message.answer("📞 Biz bilan bog'laning\n\n✍️ Savolingiz yoki muammoingizni yozing:",reply_markup=ReplyKeyboardRemove()); return
+        await state.update_data(current_menu_id=None)
+        await state.set_state(ContactForm.waiting_text)
+        await message.answer("📞 Biz bilan bog'laning\n\n✍️ Savolingiz yoki muammoingizni yozing:", reply_markup=ReplyKeyboardRemove())
+        return
     if children:
         await state.update_data(current_menu_id=btn.get("id"))
-        msg=btn.get("message","").strip() or "Tanlang:"
-        await message.answer(msg,reply_markup=make_keyboard(children,extra_back=True))
-    elif btn.get("type")=="application":
-        await state.update_data(current_menu_id=None,section=btn.get("section",btn["text"]),detail=btn["text"])
+        msg = btn.get("message","").strip() or "Tanlang:"
+        await message.answer(msg, reply_markup=make_keyboard(children, extra_back=True))
+    elif btn.get("type") == "application":
+        await state.update_data(current_menu_id=None, section=btn.get("section",btn["text"]), detail=btn["text"])
         await state.set_state(AppForm.waiting_name)
-        await message.answer(f"📋 Ariza to'ldirish\n\nBo'lim: {btn['text']}\n\n👤 Ism va familiyangizni yozing:",reply_markup=ReplyKeyboardRemove())
+        await message.answer(
+            f"📋 <b>Ariza to'ldirish</b>\n\n📌 Lavozim: {btn['text']}\n\n👤 <b>1-qadam:</b> Ism va familiyangizni yozing:",
+            parse_mode="HTML", reply_markup=ReplyKeyboardRemove()
+        )
     else:
         await state.update_data(current_menu_id=None)
-        txt=btn.get("message","").strip()
+        txt = btn.get("message","").strip()
         if not txt: return
         if "haqimizda" in btn.get("text","").lower() and not current_menu_id:
-            channel_btn=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📢 Mudarris School kanali",url="https://t.me/mudarris_maktabi")]])
-            try: await message.answer_photo(photo=ABOUT_IMAGE,caption=txt,reply_markup=channel_btn); return
-            except: await message.answer(txt,reply_markup=channel_btn); return
+            channel_btn = InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text="📢 Mudarris School kanali", url="https://t.me/mudarris_maktabi")
+            ]])
+            try: await message.answer_photo(photo=ABOUT_IMAGE, caption=txt, reply_markup=channel_btn); return
+            except: await message.answer(txt, reply_markup=channel_btn); return
         await message.answer(txt)
 
-# ── Start ─────────────────────────────────────────────────────────────
+# ── Start ───────────────────────────────────────────────────────────────
 async def run_bot():
     global bot_loop
-    bot_loop=asyncio.get_running_loop()
+    bot_loop = asyncio.get_running_loop()
     print("✅ Bot ishga tushdi")
     await dp.start_polling(tg_bot)
 
 def run_flask():
     print(f"✅ Admin panel: http://0.0.0.0:{PORT}")
-    flask_app.run(host="0.0.0.0",port=PORT,debug=False,use_reloader=False)
+    flask_app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
 
-if __name__=="__main__":
-    t=threading.Thread(target=run_flask,daemon=True)
+if __name__ == "__main__":
+    t = threading.Thread(target=run_flask, daemon=True)
     t.start()
     asyncio.run(run_bot())
