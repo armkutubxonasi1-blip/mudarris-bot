@@ -20,29 +20,91 @@
 }
 body{background:var(--bg);color:var(--text);user-select:none}
 
-/* ═══════════════════════ LOGIN ═══════════════════════ */
+/* ═══════════════════════ LOGIN (index.html style) ═══════════════════════ */
 #login-page{
-  position:fixed;inset:0;
-  background:linear-gradient(135deg,#1e1e2e 0%,#312e81 50%,#1e1e2e 100%);
-  display:flex;align-items:center;justify-content:center;z-index:9999;
+  position:fixed;inset:0;z-index:9999;
+  background:#000;overflow:hidden;
 }
-.lbox{
-  background:#fff;border-radius:20px;padding:40px 36px;width:360px;
-  box-shadow:0 32px 64px rgba(0,0,0,.35);
+/* Login inputlarni global stildan ajratish */
+#login-overlay input[type=text],
+#login-overlay input[type=password]{
+  border:none !important;
+  border-radius:15px !important;
+  background:rgba(255,255,255,.2) !important;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:#fff !important;
+  box-shadow:none !important;
+  padding:16px 16px 16px 50px !important;
+  font-size:1rem !important;
+  height:52px !important;
 }
-.lbox-logo{text-align:center;margin-bottom:30px}
-.lbox-logo i{font-size:44px;color:var(--indigo);display:block;margin-bottom:12px}
-.lbox-logo h2{font-size:22px;font-weight:700}
-.lbox-logo p{font-size:13px;color:var(--muted);margin-top:4px}
-.lfield{margin-bottom:16px}
-.lfield label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;color:#374151}
-.lfield input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--rm);font-size:14px;font-family:'Poppins',sans-serif;outline:none;transition:.15s}
-.lfield input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
-.lbtn{width:100%;padding:12px;background:var(--indigo);color:#fff;border:none;border-radius:var(--rm);font-size:14px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
-.lbtn:hover{background:#4f46e5;transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.35)}
-.lerr{color:#dc2626;font-size:12px;text-align:center;margin-top:10px;min-height:16px}
-.lhint{margin-top:18px;background:#f8fafc;border-radius:10px;padding:12px 14px;font-size:11px;color:#6b7280;line-height:1.7}
-.lhint b{color:#374151}
+#login-overlay input[type=text]::placeholder,
+#login-overlay input[type=password]::placeholder{color:rgba(255,255,255,.8) !important}
+#login-overlay input[type=text]:focus,
+#login-overlay input[type=password]:focus{
+  background:rgba(255,255,255,.28) !important;
+  box-shadow:none !important;
+  border:none !important;
+}
+#login-bg{
+  position:absolute;inset:0;
+  background-image:url("https://i.pinimg.com/1200x/c6/57/20/c65720d67c6880a6f2c7343d8dbe99c3.jpg");
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  z-index:1;
+}
+#login-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.42);
+  display:flex;align-items:center;justify-content:center;
+  z-index:10;
+}
+.login-form{
+  background:transparent;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  padding:0 20px;
+}
+.login-logo{
+  width:200px;
+  margin:0 auto 36px;
+  display:block;
+  filter:drop-shadow(0 2px 12px rgba(0,0,0,.4));
+}
+.inp-group{position:relative;margin-bottom:14px;width:100%}
+.inp-group i{
+  position:absolute;left:18px;top:50%;
+  transform:translateY(-50%);color:#fff;z-index:5;font-size:15px;
+}
+.login-form input{
+  display:block;
+  width:100%;
+  height:52px;
+  padding:0 16px 0 50px;
+  border:none;border-radius:15px;
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  color:#fff;font-size:1rem;outline:none;
+  transition:.3s;font-family:'Poppins',sans-serif;
+}
+.login-form input::placeholder{color:rgba(255,255,255,.8)}
+.login-form input:focus{background:rgba(255,255,255,.28)}
+.login-btn{
+  display:flex;
+  width:100%;
+  height:52px;
+  padding:0 16px;border:none;border-radius:15px;
+  background:#fff;color:#1a1a1c;font-weight:700;font-size:1.1rem;
+  cursor:pointer;justify-content:center;align-items:center;
+  gap:10px;transition:.3s;font-family:'Poppins',sans-serif;
+  margin-top:6px;
+}
+.login-btn:hover{background:#6366f1;color:#fff;transform:translateY(-2px)}
+.login-err{
+  color:#ff8a80;margin-top:14px;display:none;font-size:.9rem;
+  background:rgba(0,0,0,.6);padding:10px;border-radius:10px;
+  width:100%;
+}
 
 /* ═══════════════════════ LAYOUT ═══════════════════════ */
 #app{display:none;width:100vw;height:100vh;overflow:hidden;flex-direction:row}
@@ -59,6 +121,7 @@ body{background:var(--bg);color:var(--text);user-select:none}
 }
 .logo{font-size:18px;font-weight:700;margin-bottom:28px;padding-left:6px;display:flex;align-items:center;gap:10px}
 .logo i{color:var(--indigo);font-size:22px}
+.logo img{height:32px;width:auto;object-fit:contain}
 .nav-section{font-size:10px;font-weight:700;color:#d1d5db;text-transform:uppercase;letter-spacing:.8px;padding:0 10px;margin-bottom:4px;margin-top:12px}
 .nav-item{display:flex;align-items:center;padding:10px 12px;color:var(--muted);font-size:13.5px;font-weight:500;border-radius:var(--rm);transition:.15s;cursor:pointer;gap:10px}
 .nav-item i{width:18px;font-size:15px;text-align:center}
@@ -66,7 +129,7 @@ body{background:var(--bg);color:var(--text);user-select:none}
 .nav-item.active{background:var(--indigo-l);color:var(--indigo);font-weight:600}
 .nav-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
 .sidebar-bottom{margin-top:auto;border-top:1px solid var(--border);padding-top:14px}
-.user-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:var(--rm);cursor:default}
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:var(--rm)}
 .user-av{width:34px;height:34px;border-radius:50%;background:var(--indigo);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
 .user-info{flex:1;min-width:0}
 .user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -97,8 +160,7 @@ body{background:var(--bg);color:var(--text);user-select:none}
 .stat-card.dark .stat-label{color:#a5b4fc}
 .stat-val{font-size:32px;font-weight:700;line-height:1}
 .stat-val.green{color:var(--green)}.stat-val.blue{color:var(--blue)}
-.stat-val.purple{color:var(--indigo)}.stat-val.orange{color:#c2410c}
-.stat-val.red{color:var(--red)}
+.stat-val.purple{color:var(--indigo)}.stat-val.orange{color:#c2410c}.stat-val.red{color:var(--red)}
 
 /* ═══════════════════════ CARD ═══════════════════════ */
 .card{background:var(--card);border-radius:var(--r);padding:22px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:18px}
@@ -118,19 +180,17 @@ tr:hover td{background:#fafafa}
 
 /* ═══════════════════════ BADGES ═══════════════════════ */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap}
-.s-new      {background:#dbeafe;color:#1d4ed8}
-.s-reviewed {background:#fef3c7;color:#b45309}
+.s-new{background:#dbeafe;color:#1d4ed8}
+.s-reviewed{background:#fef3c7;color:#b45309}
 .s-interview{background:#ffedd5;color:#c2410c}
-.s-offer    {background:#ede9fe;color:#6d28d9}
-.s-hired    {background:#dcfce7;color:#15803d}
-.s-rejected {background:#fee2e2;color:#b91c1c}
+.s-offer{background:#ede9fe;color:#6d28d9}
+.s-hired{background:#dcfce7;color:#15803d}
+.s-rejected{background:#fee2e2;color:#b91c1c}
 .s-open{background:#dcfce7;color:#15803d}
 .s-closed{background:#fee2e2;color:#b91c1c}
 .s-paused{background:#fef3c7;color:#b45309}
 .s-msg-new{background:#fce7f3;color:#9d174d}
 .s-replied{background:#dcfce7;color:#15803d}
-
-/* CV */
 .cv-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;border:1.5px solid}
 .cv-tag.has{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.cv-tag.has:hover{background:#1d4ed8;color:#fff}
 .cv-tag.no{background:#f9fafb;color:#9ca3af;border-color:#e5e7eb;cursor:default;pointer-events:none}
@@ -140,7 +200,6 @@ tr:hover td{background:#fafafa}
 .btn-dark{background:var(--accent);color:#fff}.btn-dark:hover{opacity:.88;transform:translateY(-1px)}
 .btn-primary{background:var(--indigo);color:#fff}.btn-primary:hover{background:#4f46e5;transform:translateY(-1px)}
 .btn-ghost{background:transparent;color:var(--indigo);border:1.5px solid #e0e0f0}.btn-ghost:hover{background:var(--indigo-l)}
-.btn-danger{background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca}.btn-danger:hover{background:#fee2e2}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-excel{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rm);font-size:12.5px;font-weight:500;cursor:pointer;border:1.5px solid #16a34a;background:#f0fdf4;color:#16a34a;font-family:'Poppins',sans-serif;transition:.15s}
 .btn-excel:hover{background:#16a34a;color:#fff}
@@ -164,7 +223,7 @@ textarea{resize:vertical;min-height:80px}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
 .modal{background:#fff;border-radius:16px;padding:26px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.2)}
-.modal-sm{max-width:440px}.modal-md{max-width:560px}.modal-lg{max-width:780px}
+.modal-sm{max-width:440px}.modal-md{max-width:580px}.modal-lg{max-width:780px}
 .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .mhead h3{font-size:16px;font-weight:700}
 .mclose{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:6px;line-height:1;transition:.15s}
@@ -180,7 +239,7 @@ textarea{resize:vertical;min-height:80px}
 .dr:last-child{border-bottom:none}
 .dk{font-size:11px;font-weight:600;color:var(--muted);min-width:86px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0}
 .dv{font-size:13px;color:#334155;flex:1;word-break:break-word}
-.detail-section{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.dsec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
 .reply-box{background:#f8fafc;border-radius:10px;padding:12px;margin-top:10px}
 .ri{background:#fff;border-radius:8px;padding:9px 12px;margin-bottom:7px;border:1px solid var(--border)}
 .ri:last-child{margin-bottom:0}
@@ -209,11 +268,12 @@ textarea{resize:vertical;min-height:80px}
 .k-drop.over{border-color:var(--indigo);background:var(--indigo-l);color:var(--indigo)}
 
 /* ═══════════════════════ VACANCIES ═══════════════════════ */
-.vac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.vac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .vac-card{background:var(--card);border-radius:var(--r);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);transition:.15s}
 .vac-card:hover{border-color:var(--indigo);box-shadow:0 4px 14px rgba(99,102,241,.1)}
 .vac-title{font-size:14px;font-weight:700;margin-bottom:4px}
-.vac-dept{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.vac-sub{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.vac-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:#f1f5f9;border-radius:6px;font-size:11px;color:#475569;font-weight:500}
 .vac-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .vac-meta span{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .vac-foot{display:flex;align-items:center;justify-content:space-between}
@@ -233,7 +293,7 @@ textarea{resize:vertical;min-height:80px}
 .toggle input:checked+.tslider{background:var(--indigo)}
 .toggle input:checked+.tslider:before{transform:translateX(18px)}
 
-/* ═══════════════════════ WELCOME / BTN TREE ═══════════════════════ */
+/* ═══════════════════════ BTN TREE ═══════════════════════ */
 .wcard{background:var(--accent);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
 .wcard input{flex:1;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);border-radius:var(--rm);padding:9px 13px;color:#fff;font-size:13px;font-family:'Poppins',sans-serif;outline:none}
 .wcard input::placeholder{color:rgba(255,255,255,.4)}
@@ -261,26 +321,41 @@ textarea{resize:vertical;min-height:80px}
 
 <!-- ══════════════════ LOGIN ══════════════════ -->
 <div id="login-page">
-  <div class="lbox">
-    <div class="lbox-logo">
-      <i class="fa-solid fa-graduation-cap"></i>
-      <h2>Mudarris ATS</h2>
-      <p>Admin paneliga kirish</p>
+  <div id="login-bg"></div>
+  <div id="login-overlay">
+    <div class="login-form">
+      <img src="https://img4.teletype.in/files/b4/19/b4199a12-9b48-4836-8388-4d4429ad8fa2.png" class="login-logo" alt="Mudarris Logo">
+      <div class="inp-group">
+        <i class="fas fa-user"></i>
+        <input type="text" id="l-u" placeholder="Foydalanuvchi nomi" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div class="inp-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="l-p" placeholder="Parol" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">
+        <span>Kirish</span>
+        <i class="fas fa-arrow-right"></i>
+      </button>
+      <div class="login-err" id="lerr"><i class="fas fa-exclamation-circle"></i> Login yoki parol noto'g'ri!</div>
     </div>
-    <div class="lfield"><label>Login</label><input type="text" id="l-u" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="lfield"><label>Parol</label><input type="password" id="l-p" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="lbtn" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket"></i> Kirish</button>
-    <div class="lerr" id="lerr"></div>
-    <div class="lhint"><b>Demo loginlar:</b><br>admin / admin123 · hr / hr1234 · recruiter / recruit123</div>
   </div>
 </div>
 
 <!-- ══════════════════ APP ══════════════════ -->
 <div id="app">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="logo"><i class="fa-solid fa-graduation-cap"></i><span>Mudarris ATS</span></div>
+  <div class="logo">
+    <img src="https://img4.teletype.in/files/b4/19/b4199a12-9b48-4836-8388-4d4429ad8fa2.png" alt="logo"
+      onload="this.style.display='block';document.getElementById('logo-fb').style.display='none'"
+      onerror="this.style.display='none';document.getElementById('logo-fb').style.display='flex'"
+      style="display:block;height:32px;width:auto;object-fit:contain">
+    <div id="logo-fb" style="display:none;align-items:center;gap:8px">
+      <i class="fa-solid fa-graduation-cap" style="color:var(--indigo);font-size:22px"></i>
+      <span style="font-size:16px;font-weight:700">Mudarris ATS</span>
+    </div>
+  </div>
 
   <div class="nav-section">Asosiy</div>
   <div class="nav-item active" onclick="showPage('dashboard',this)"><i class="fa-solid fa-chart-pie" style="color:#3b82f6"></i> Dashboard</div>
@@ -305,7 +380,6 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <h2 id="ptitle">Dashboard</h2>
@@ -317,11 +391,11 @@ textarea{resize:vertical;min-height:80px}
 
   <div class="content">
 
-    <!-- ── DASHBOARD ── -->
+    <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-grid">
         <div class="stat-card dark"><div class="stat-label">Jami arizalar</div><div class="stat-val" id="s-total">—</div></div>
-        <div class="stat-card"><div class="stat-label">Kutilmoqda</div><div class="stat-val blue" id="s-pending">—</div></div>
+        <div class="stat-card"><div class="stat-label">Yangi</div><div class="stat-val blue" id="s-pending">—</div></div>
         <div class="stat-card"><div class="stat-label">Intervyu</div><div class="stat-val orange" id="s-interview">—</div></div>
         <div class="stat-card"><div class="stat-label">Qabul qilindi</div><div class="stat-val green" id="s-hired">—</div></div>
       </div>
@@ -342,23 +416,23 @@ textarea{resize:vertical;min-height:80px}
       </div>
     </div>
 
-    <!-- ── PIPELINE ── -->
+    <!-- PIPELINE -->
     <div class="page" id="page-pipeline">
       <div class="filters" style="margin-bottom:16px">
-        <select id="pk-sec" onchange="renderKanban()" class="fsel"><option value="">Barcha bo'lim</option><option>Maktab</option><option>Bog'cha</option><option>O'quv markaz</option><option>Iste'dotlar zaxirasi</option></select>
+        <select id="pk-sec" onchange="renderKanban()" class="fsel"><option value="">Barcha bo'lim</option></select>
         <select id="pk-vac" onchange="renderKanban()" class="fsel"><option value="">Barcha vakansiya</option></select>
       </div>
       <div class="kanban-wrap" id="kanban"></div>
     </div>
 
-    <!-- ── ARIZALAR ── -->
+    <!-- ARIZALAR -->
     <div class="page" id="page-applications">
       <div class="card">
         <div class="card-header">
           <span class="card-title">Barcha arizalar</span>
           <div class="filters">
             <button class="btn-excel btn-sm" onclick="exportExcel('apps')"><i class="fa-solid fa-file-excel"></i> Excel</button>
-            <select id="f-sec" onchange="filterApps()" class="fsel"><option value="">Barcha bo'lim</option><option>Maktab</option><option>Bog'cha</option><option>O'quv markaz</option><option>Iste'dotlar zaxirasi</option></select>
+            <select id="f-sec" onchange="filterApps()" class="fsel"><option value="">Barcha bo'lim</option></select>
             <select id="f-st" onchange="filterApps()" class="fsel"><option value="">Barcha bosqich</option></select>
           </div>
         </div>
@@ -366,11 +440,12 @@ textarea{resize:vertical;min-height:80px}
       </div>
     </div>
 
-    <!-- ── VAKANSIYALAR ── -->
+    <!-- VAKANSIYALAR -->
     <div class="page" id="page-vacancies">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
         <div class="filters">
-          <select id="vf-d" onchange="filterVac()" class="fsel"><option value="">Barcha bo'lim</option><option>Maktab</option><option>Akademiya</option><option>Bog'cha</option><option>Admin</option><option>Oshxona</option></select>
+          <select id="vf-org" onchange="filterVac()" class="fsel"><option value="">Barcha tashkilot</option></select>
+          <select id="vf-branch" onchange="filterVac()" class="fsel"><option value="">Barcha filial</option></select>
           <select id="vf-s" onchange="filterVac()" class="fsel"><option value="">Barcha status</option><option value="open">Ochiq</option><option value="closed">Yopiq</option><option value="paused">Muzlatilgan</option></select>
         </div>
         <button class="btn btn-primary" onclick="openVacM()"><i class="fa-solid fa-plus"></i> Yangi vakansiya</button>
@@ -378,7 +453,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="vac-grid" id="vac-list"></div>
     </div>
 
-    <!-- ── MUROJAATLAR ── -->
+    <!-- MUROJAATLAR -->
     <div class="page" id="page-contacts">
       <div class="card">
         <div class="card-header">
@@ -392,7 +467,7 @@ textarea{resize:vertical;min-height:80px}
       </div>
     </div>
 
-    <!-- ── SHABLONLAR ── -->
+    <!-- SHABLONLAR -->
     <div class="page" id="page-templates">
       <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
         <button class="btn btn-primary" onclick="openTmplM()"><i class="fa-solid fa-plus"></i> Yangi shablon</button>
@@ -400,7 +475,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="tmpl-list" id="tmpl-list"></div>
     </div>
 
-    <!-- ── BOT TUGMALARI ── -->
+    <!-- BOT TUGMALARI -->
     <div class="page" id="page-buttons">
       <div class="wcard">
         <i class="fa-solid fa-robot" style="font-size:18px;color:#9ca3af;flex-shrink:0"></i>
@@ -449,26 +524,62 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div></div>
 
-<!-- Vacancy -->
+<!-- Vacancy Modal -->
 <div class="overlay" id="vacm"><div class="modal modal-md">
   <div class="mhead"><h3 id="vacm-t">Yangi vakansiya</h3><button class="mclose" onclick="closeM('vacm')">×</button></div>
+
   <div class="fg-row">
-    <div class="fg"><label class="fl">Lavozim nomi</label><input type="text" id="v-title" placeholder="Matematika o'qituvchisi"></div>
-    <div class="fg"><label class="fl">Bo'lim</label><select id="v-dept" style="width:100%"><option>Maktab</option><option>Akademiya</option><option>Bog'cha</option><option>Admin</option><option>Oshxona</option></select></div>
+    <div class="fg">
+      <label class="fl">Lavozim nomi</label>
+      <input type="text" id="v-title" placeholder="Masalan: Matematika o'qituvchisi">
+    </div>
+    <div class="fg">
+      <label class="fl">Status</label>
+      <select id="v-status" style="width:100%">
+        <option value="open">Ochiq</option>
+        <option value="closed">Yopiq</option>
+        <option value="paused">Muzlatilgan</option>
+      </select>
+    </div>
   </div>
+
+  <!-- Tashkilot tanlash -->
+  <div class="fg-row">
+    <div class="fg">
+      <label class="fl">Tashkilot turi</label>
+      <select id="v-org" onchange="onOrgChange()" style="width:100%">
+        <option value="">— Tanlang —</option>
+        <option value="maktab">🏫 Maktab</option>
+        <option value="bogcha">👶 Bog'cha</option>
+        <option value="oquv">📚 O'quv markaz</option>
+        <option value="admin">🏢 Admin / Boshqaruv</option>
+        <option value="oshxona">🍽 Oshxona</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Filial / Maktab nomi</label>
+      <select id="v-branch" style="width:100%">
+        <option value="">— Avval tashkilot tanlang —</option>
+      </select>
+    </div>
+  </div>
+
   <div class="fg-row">
     <div class="fg"><label class="fl">Ochilgan sana</label><input type="date" id="v-open"></div>
     <div class="fg"><label class="fl">Deadline</label><input type="date" id="v-dead"></div>
   </div>
   <div class="fg-row">
     <div class="fg"><label class="fl">O'rin soni</label><input type="number" id="v-slots" value="1" min="1"></div>
-    <div class="fg"><label class="fl">Status</label><select id="v-status" style="width:100%"><option value="open">Ochiq</option><option value="closed">Yopiq</option><option value="paused">Muzlatilgan</option></select></div>
+    <div class="fg">
+      <label class="fl">Botda ko'rsatilsin</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <label class="toggle"><input type="checkbox" id="v-bot" checked><span class="tslider"></span></label>
+        <span style="font-size:13px;color:var(--muted)">Ha / Yo'q</span>
+      </div>
+    </div>
   </div>
-  <div class="fg"><label class="fl">Tavsif</label><textarea id="v-desc" placeholder="Vakansiya haqida..."></textarea></div>
-  <div class="fg" style="display:flex;align-items:center;gap:12px">
-    <label class="toggle"><input type="checkbox" id="v-bot" checked><span class="tslider"></span></label>
-    <span style="font-size:13px;font-weight:500">Botda ko'rsatilsin</span>
-  </div>
+  <div class="fg"><label class="fl">Tavsif (ixtiyoriy)</label><textarea id="v-desc" placeholder="Vakansiya haqida qisqacha..."></textarea></div>
+
   <div class="mf">
     <button class="btn btn-primary" onclick="saveVac()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
     <button class="btn btn-ghost" onclick="closeM('vacm')">Bekor</button>
@@ -505,20 +616,54 @@ textarea{resize:vertical;min-height:80px}
 const API=window.location.origin+"/api";
 const ICONS=["🏢","💼","🏫","👶","📚","📞","💎","📍","📖","🗓","📅","🎯","🏆","⭐","🔥","💡","🎓","👨‍🏫","👩‍🏫","🏛","📋","✅","🔔","💬","📢","🌟","🎁","🚀","🏠","🌍","💻","📱","🎨","🛠","⚙️","🔑","💰","📊","📈","🤝","👥","🌈","🏋️","🎵","📸","✈️","🎪","🎭"];
 
+// ── Tashkilot → Filiallar maplash ──────────────────────────────────
+const ORG_BRANCHES = {
+  maktab: [
+    "Sergeli Maktab","Qo'yliq Maktab","Qa'ni Maktab",
+    "Vatan Maktabi","Beruniy Maktab","Yunusobod Maktab",
+    "Chilonzor Maktab","Mirzo Ulug'bek Maktab"
+  ],
+  bogcha: [
+    "Beruniy Mudarris Kids","Yangihayot Mudarris Kids",
+    "Sergeli Mudarris Kids","Qo'yliq Mudarris Kids"
+  ],
+  oquv: [
+    "Beruniy O'quv Markazi","Yangihayot O'quv Markazi",
+    "Sergeli O'quv Markazi","Chilonzor O'quv Markazi"
+  ],
+  admin: ["Bosh ofis","HR bo'limi","Moliya bo'limi","IT bo'limi"],
+  oshxona: ["Sergeli Oshxona","Beruniy Oshxona","Qo'yliq Oshxona"]
+};
+
+const ORG_LABELS = {
+  maktab:"🏫 Maktab", bogcha:"👶 Bog'cha",
+  oquv:"📚 O'quv markaz", admin:"🏢 Admin",
+  oshxona:"🍽 Oshxona"
+};
+
+function onOrgChange(){
+  const org = document.getElementById("v-org").value;
+  const sel = document.getElementById("v-branch");
+  if(!org){ sel.innerHTML=`<option value="">— Avval tashkilot tanlang —</option>`; return; }
+  const branches = ORG_BRANCHES[org]||[];
+  sel.innerHTML=`<option value="">— Filial tanlang —</option>`+branches.map(b=>`<option value="${h(b)}">${h(b)}</option>`).join('');
+}
+
+// ── State ──────────────────────────────────────────────────────────
 let allApps=[],allContacts=[],allVacancies=[],allTemplates=[],pipelineStages=[],cfgData=null;
 let currentUser=null,dtType=null,dtId=null,editAppId=null,editVacId=null,editTmplId=null;
 let selIcon="",editBtnId=null,addBtnPid=null,dragAppId=null;
 
-/* ─ AUTH ─ */
+// ── AUTH ──────────────────────────────────────────────────────────
 async function doLogin(){
-  document.getElementById("lerr").textContent="";
+  document.getElementById("lerr").style.display="none";
   const u=document.getElementById("l-u").value.trim(), p=document.getElementById("l-p").value.trim();
   try{
     const r=await fetch(`${API}/login`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
     if(d.success){ currentUser=d.user; showApp(); await loadAll(); }
-    else document.getElementById("lerr").textContent=d.error||"Xatolik";
-  }catch(e){ document.getElementById("lerr").textContent="Server bilan ulanishda xatolik"; }
+    else{ document.getElementById("lerr").style.display="block"; document.getElementById("l-p").value=""; }
+  }catch(e){ document.getElementById("lerr").style.display="block"; }
 }
 async function doLogout(){ await fetch(`${API}/logout`,{method:"POST",credentials:"include"}); location.reload(); }
 async function checkAuth(){
@@ -538,7 +683,7 @@ function showApp(){
   document.getElementById("uav").textContent=(currentUser.name||"A")[0].toUpperCase();
 }
 
-/* ─ LOAD ─ */
+// ── LOAD ──────────────────────────────────────────────────────────
 async function loadAll(){
   try{
     const r=await fetch(`${API}/all`,{credentials:"include"});
@@ -553,24 +698,44 @@ async function loadAll(){
     if(cfgData.welcome_message) document.getElementById("winp").value=cfgData.welcome_message;
     setConn(true);
     const nc=allApps.filter(a=>(a.stage||'new')==='new').length;
-    document.getElementById("nb-apps").textContent=nc; document.getElementById("nb-apps").style.display=nc?'':'none';
+    document.getElementById("nb-apps").textContent=nc;
+    document.getElementById("nb-apps").style.display=nc?'':'none';
     const mc=allContacts.filter(c=>c.status==='new').length;
-    document.getElementById("nb-ct").textContent=mc; document.getElementById("nb-ct").style.display=mc?'flex':'none';
+    document.getElementById("nb-ct").textContent=mc;
+    document.getElementById("nb-ct").style.display=mc?'flex':'none';
   }catch(e){ setConn(false); }
 }
+
 function setConn(on){
   document.getElementById("cdot").className="cdot"+(on?"":" off");
   document.getElementById("ctext").textContent=on?"API ulangan":"API ulanmagan";
 }
+
 function populateFilters(){
-  const opts=pipelineStages.map(s=>`<option value="${s.id}">${s.label}</option>`).join('');
-  document.getElementById("f-st").innerHTML=`<option value="">Barcha bosqich</option>`+opts;
-  document.getElementById("d-st").innerHTML=`<option value="">Barcha bosqich</option>`+opts;
+  // Stage filtrlar
+  const stOpts=pipelineStages.map(s=>`<option value="${s.id}">${s.label}</option>`).join('');
+  document.getElementById("f-st").innerHTML=`<option value="">Barcha bosqich</option>`+stOpts;
+  document.getElementById("d-st").innerHTML=`<option value="">Barcha bosqich</option>`+stOpts;
+
+  // Vakansiya filtrlar
   document.getElementById("pk-vac").innerHTML=`<option value="">Barcha vakansiya</option>`+allVacancies.filter(v=>v.status==='open').map(v=>`<option value="${v.id}">${h(v.title)}</option>`).join('');
+
+  // Section (bo'lim) filtr - vacancies dan olish
+  const orgs=[...new Set(allVacancies.map(v=>v.org_type).filter(Boolean))];
+  const secSet=[...new Set(allApps.map(a=>a.section).filter(Boolean))];
+
+  document.getElementById("pk-sec").innerHTML=`<option value="">Barcha bo'lim</option>`+secSet.map(s=>`<option value="${s}">${s}</option>`).join('');
+  document.getElementById("f-sec").innerHTML=`<option value="">Barcha bo'lim</option>`+secSet.map(s=>`<option value="${s}">${s}</option>`).join('');
+
+  // Vacancy org filter
+  const orgList=[...new Set(allVacancies.map(v=>v.org_type).filter(Boolean))];
+  document.getElementById("vf-org").innerHTML=`<option value="">Barcha tashkilot</option>`+orgList.map(o=>`<option value="${o}">${ORG_LABELS[o]||o}</option>`).join('');
+  document.getElementById("vf-branch").innerHTML=`<option value="">Barcha filial</option>`;
 }
+
 function updateStats(){
   document.getElementById("s-total").textContent=allApps.length;
-  document.getElementById("s-pending").textContent=allApps.filter(a=>['new'].includes(a.stage||'')).length;
+  document.getElementById("s-pending").textContent=allApps.filter(a=>(a.stage||'new')==='new').length;
   document.getElementById("s-rev").textContent=allApps.filter(a=>a.stage==='reviewed').length;
   document.getElementById("s-interview").textContent=allApps.filter(a=>a.stage==='interview').length;
   document.getElementById("s-offer").textContent=allApps.filter(a=>a.stage==='offer').length;
@@ -578,7 +743,7 @@ function updateStats(){
   document.getElementById("s-rej").textContent=allApps.filter(a=>a.stage==='rejected').length;
 }
 
-/* ─ NAV ─ */
+// ── NAV ────────────────────────────────────────────────────────────
 function showPage(id,el){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.getElementById("page-"+id).classList.add("active");
@@ -588,14 +753,13 @@ function showPage(id,el){
   document.getElementById("ptitle").textContent=tt[id]||id;
 }
 
-/* ─ UTIL ─ */
+// ── UTIL ───────────────────────────────────────────────────────────
 function h(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function stageBadge(stage){
   const cl={new:"s-new",reviewed:"s-reviewed",interview:"s-interview",offer:"s-offer",hired:"s-hired",rejected:"s-rejected"};
   const lb={new:"Yangi",reviewed:"Ko'rib chiqildi",interview:"Intervyu",offer:"Taklif",hired:"Qabul qilindi",rejected:"Rad etildi"};
   return `<span class="badge ${cl[stage]||'s-new'}">${lb[stage]||stage}</span>`;
 }
-function stageColor(s){const st=pipelineStages.find(x=>x.id===s);return st?st.color:"#6366f1";}
 function cvTag(a){
   if(a.cv_file_id&&a.cv_type&&a.cv_type!=="none"){
     const ic=a.cv_type==="document"?"fa-file-pdf":"fa-image";
@@ -607,7 +771,7 @@ function starsHTML(n,id,editable){
   return `<div class="stars-row">${Array.from({length:5},(_,i)=>`<span class="star ${i<(n||0)?'on':''}" ${editable?`onclick="setStar(${id},${i+1})"`:''}>★</span>`).join('')}</div>`;
 }
 
-/* ─ SEARCH ─ */
+// ── SEARCH ─────────────────────────────────────────────────────────
 function searchAll(q){
   if(!q){filterApps();return;}
   q=q.toLowerCase();
@@ -616,7 +780,7 @@ function searchAll(q){
   showPage('applications',document.querySelector('[onclick*="applications"]'));
 }
 
-/* ─ APPS TABLE ─ */
+// ── APPS ───────────────────────────────────────────────────────────
 function appsHTML(apps){
   if(!apps?.length) return `<p style="color:#9ca3af;text-align:center;padding:28px;font-size:13px">Arizalar yo'q</p>`;
   return `<table><thead><tr><th>#</th><th>Ism</th><th>Telefon</th><th>Yosh / Tajriba</th><th>CV</th><th>Baho</th><th>Bo'lim</th><th>Bosqich</th><th>Vaqt</th><th></th></tr></thead><tbody>
@@ -639,8 +803,7 @@ function appsHTML(apps){
 }
 function filterDash(){
   const st=document.getElementById("d-st").value;
-  const f=(st?allApps.filter(a=>(a.stage||'new')===st):allApps).slice(0,10);
-  document.getElementById("dash-table").innerHTML=appsHTML(f);
+  document.getElementById("dash-table").innerHTML=appsHTML((st?allApps.filter(a=>(a.stage||'new')===st):allApps).slice(0,10));
 }
 function filterApps(){
   const sec=document.getElementById("f-sec").value, st=document.getElementById("f-st").value;
@@ -650,7 +813,7 @@ function filterApps(){
   document.getElementById("apps-table").innerHTML=appsHTML(f);
 }
 
-/* ─ CONTACTS ─ */
+// ── CONTACTS ───────────────────────────────────────────────────────
 function filterContacts(){
   const st=document.getElementById("f-cst").value;
   const list=st?allContacts.filter(c=>(c.status||'new')===st):allContacts;
@@ -671,13 +834,13 @@ function filterContacts(){
   </tr>`).join('')}</tbody></table>`;
 }
 
-/* ─ KANBAN ─ */
+// ── KANBAN ─────────────────────────────────────────────────────────
 function renderKanban(){
   const secF=document.getElementById("pk-sec")?.value||"";
   const vacF=document.getElementById("pk-vac")?.value||"";
   let apps=allApps;
   if(secF) apps=apps.filter(a=>a.section===secF);
-  if(vacF){const v=allVacancies.find(x=>x.id===vacF);if(v) apps=apps.filter(a=>a.detail===v.title);}
+  if(vacF){const v=allVacancies.find(x=>x.id===vacF);if(v)apps=apps.filter(a=>a.detail===v.title);}
   const board=document.getElementById("kanban"); board.innerHTML="";
   pipelineStages.forEach(stage=>{
     const cards=apps.filter(a=>(a.stage||'new')===stage.id);
@@ -707,47 +870,30 @@ async function moveStage(id,stage){
   }catch(e){alert("Xatolik.");}
 }
 
-/* ─ CV VIEWER (to'g'ri ishlaydi) ─ */
+// ── CV ─────────────────────────────────────────────────────────────
 function openCV(appId){
   const a=allApps.find(x=>x.id===appId);
-  if(!a||!a.cv_file_id){ alert("CV mavjud emas"); return; }
+  if(!a||!a.cv_file_id){alert("CV mavjud emas");return;}
   const url=`${API}/cv/${a.cv_file_id}`;
   document.getElementById("cv-title").textContent=`📎 CV — ${a.name||a.tg_name} (#${a.id})`;
   document.getElementById("cv-dl").href=url;
   const body=document.getElementById("cv-body");
-  // spinner
-  body.innerHTML=`<div style="text-align:center;padding:50px 20px;color:#9ca3af">
-    <i class="fa-solid fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px"></i>
-    <span style="font-size:13px">Yuklanmoqda...</span></div>`;
+  body.innerHTML=`<div style="text-align:center;padding:50px 20px;color:#9ca3af"><i class="fa-solid fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:12px"></i><span style="font-size:13px">Yuklanmoqda...</span></div>`;
   openM("cvm");
   if(a.cv_type==="document"){
-    // PDF — iframe
-    body.innerHTML=`<iframe
-      src="${url}"
-      style="width:100%;height:500px;border:none;border-radius:10px;display:block;background:#f8fafc"
-      onload="this.style.background='#fff'"
-      onerror="cvErr('${url}')">
-    </iframe>`;
-  } else {
-    // Rasm
-    body.innerHTML=`<div style="text-align:center">
-      <img src="${url}"
-        style="max-width:100%;max-height:500px;object-fit:contain;border-radius:10px;border:1px solid #e5e7eb;display:inline-block"
-        onload="this.style.display='inline-block'"
-        onerror="cvErr('${url}')">
-    </div>`;
+    body.innerHTML=`<iframe src="${url}" style="width:100%;height:500px;border:none;border-radius:10px;display:block;background:#f8fafc"></iframe>`;
+  }else{
+    body.innerHTML=`<div style="text-align:center"><img src="${url}" style="max-width:100%;max-height:500px;object-fit:contain;border-radius:10px;border:1px solid #e5e7eb;display:inline-block" onerror="cvErr('${url}')"></div>`;
   }
 }
 function cvErr(url){
-  document.getElementById("cv-body").innerHTML=`
-    <div style="text-align:center;padding:40px;color:#dc2626">
-      <i class="fa-solid fa-circle-exclamation" style="font-size:32px;display:block;margin-bottom:12px"></i>
-      <p style="font-size:13px;margin-bottom:12px">Fayl brauzerda ochilmadi.</p>
-      <a href="${url}" target="_blank" class="btn btn-primary btn-sm"><i class="fa-solid fa-external-link-alt"></i> Yangi tabda ochish</a>
-    </div>`;
+  document.getElementById("cv-body").innerHTML=`<div style="text-align:center;padding:40px;color:#dc2626">
+    <i class="fa-solid fa-circle-exclamation" style="font-size:32px;display:block;margin-bottom:12px"></i>
+    <p style="font-size:13px;margin-bottom:12px">Fayl brauzerda ochilmadi.</p>
+    <a href="${url}" target="_blank" class="btn btn-primary btn-sm"><i class="fa-solid fa-external-link-alt"></i> Yangi tabda ochish</a></div>`;
 }
 
-/* ─ DETAIL MODAL ─ */
+// ── DETAIL ─────────────────────────────────────────────────────────
 function openDetail(type,id){
   dtType=type; dtId=id;
   const item=type==='app'?allApps.find(a=>a.id===id):allContacts.find(c=>c.id===id);
@@ -760,16 +906,15 @@ function openDetail(type,id){
     document.getElementById("dm-wrap").style.gridTemplateColumns=window.innerWidth>640?"1fr 1fr":"1fr";
     const hasCv=item.cv_file_id&&item.cv_type&&item.cv_type!=="none";
     const hist=(item.history||[]).slice().reverse().slice(0,6).map(x=>`<div class="hist-item"><b>${h(x.by)}</b>: ${h(x.action)} — ${x.time}</div>`).join('');
-
     document.getElementById("dm-left").innerHTML=`
-      <div class="detail-section">Shaxsiy ma'lumot</div>
+      <div class="dsec">Shaxsiy ma'lumot</div>
       <div class="dr"><span class="dk">👤 Ism</span><span class="dv"><b>${h(item.name||item.tg_name)}</b></span></div>
       <div class="dr"><span class="dk">Telegram</span><span class="dv">@${h(item.username||'—')}</span></div>
       <div class="dr"><span class="dk">📱 Telefon</span><span class="dv" style="color:var(--indigo);font-weight:600">${h(item.phone||'—')}</span></div>
       <div class="dr"><span class="dk">🎂 Yosh</span><span class="dv">${h(item.age||'—')}</span></div>
       <div class="dr"><span class="dk">💼 Tajriba</span><span class="dv">${h(item.experience||'—')}</span></div>
       <div class="dr"><span class="dk">📎 CV</span><span class="dv">
-        ${hasCv?`<span class="cv-tag has" style="cursor:pointer" onclick="openCV(${item.id})"><i class="fa-solid ${item.cv_type==='document'?'fa-file-pdf':'fa-image'}"></i> ${item.cv_type==='document'?'PDF Ko\'rish':'Rasm Ko\'rish'}</span>`:'<span style="color:#9ca3af">Yuklanmagan</span>'}
+        ${hasCv?`<span class="cv-tag has" onclick="openCV(${item.id})" style="cursor:pointer"><i class="fa-solid ${item.cv_type==='document'?'fa-file-pdf':'fa-image'}"></i>${item.cv_type==='document'?'PDF Ko\'rish':'Rasm Ko\'rish'}</span>`:'<span style="color:#9ca3af">Yuklanmagan</span>'}
       </span></div>
       ${item.note?`<div class="dr"><span class="dk">💬 Izoh</span><span class="dv">${h(item.note)}</span></div>`:''}
       <div class="dr"><span class="dk">📌 Bo'lim</span><span class="dv">${h(item.section)} — ${h(item.detail||'')}</span></div>
@@ -779,14 +924,13 @@ function openDetail(type,id){
           ${pipelineStages.map(s=>`<option value="${s.id}" ${(item.stage||'new')===s.id?'selected':''}>${s.label}</option>`).join('')}
         </select>
       </span></div>
-      <div class="detail-section">HR Baholash</div>
+      <div class="dsec">HR Baholash</div>
       <div id="dm-stars">${starsHTML(item.stars||0,item.id,true)}</div>
       <div class="fg" style="margin-top:8px"><textarea id="dm-note" style="width:100%;min-height:60px;font-size:12px" placeholder="HR izohi...">${h(item.hr_note||'')}</textarea></div>
       <button class="btn btn-ghost btn-sm" style="width:100%" onclick="saveStarNote()"><i class="fa-solid fa-floppy-disk"></i> Bahoni saqlash</button>
-      ${hist?`<div class="detail-section">Tarix</div><div>${hist}</div>`:''}`;
-
+      ${hist?`<div class="dsec">Tarix</div><div>${hist}</div>`:''}`;
     document.getElementById("dm-right").innerHTML=`
-      <div class="detail-section">Javob yuborish</div>
+      <div class="dsec">Javob yuborish</div>
       <div class="fg">
         <label class="fl">Shablon</label>
         <select id="dm-tmpl" onchange="applyTmpl()" class="fsel" style="width:100%;margin-bottom:8px">
@@ -795,27 +939,28 @@ function openDetail(type,id){
       </div>
       <textarea id="dm-reply" placeholder="Nomzodga xabar..." style="width:100%;min-height:110px;font-size:13px;font-family:'Poppins',sans-serif"></textarea>
       <button class="btn btn-dark" style="margin-top:8px;width:100%" onclick="sendReply()"><i class="fa-solid fa-paper-plane"></i> Telegram orqali yuborish</button>
-      ${replies?`<div class="detail-section">Yuborilgan javoblar</div><div class="reply-box">${replies}</div>`:''}`;
-  } else {
+      ${replies?`<div class="dsec">Yuborilgan javoblar</div><div class="reply-box">${replies}</div>`:''}`;
+  }else{
     document.getElementById("dm-wrap").style.gridTemplateColumns="1fr";
+    const replies2=(item.replies||[]).map(r=>`<div class="ri"><div class="rt">${h(r.by||'Admin')} · ${r.time}</div><div class="rm">${h(r.text)}</div></div>`).join('');
     document.getElementById("dm-left").innerHTML=`
       <div class="dr"><span class="dk">Foydalanuvchi</span><span class="dv"><b>${h(item.tg_name||'—')}</b></span></div>
       <div class="dr"><span class="dk">Telegram</span><span class="dv">@${h(item.username||'—')}</span></div>
       <div class="dr"><span class="dk">📱 Telefon</span><span class="dv" style="color:var(--indigo);font-weight:600">${h(item.phone||'—')}</span></div>
       <div class="dr"><span class="dk">Xabar</span><span class="dv">${h(item.text||'—')}</span></div>
       <div class="dr"><span class="dk">Vaqt</span><span class="dv">${item.time}</span></div>
-      <div class="detail-section" style="margin-top:14px">Javob yuborish</div>
+      <div class="dsec" style="margin-top:14px">Javob yuborish</div>
       <div class="fg"><select id="dm-tmpl" onchange="applyTmpl()" class="fsel" style="width:100%;margin-bottom:8px"><option value="">— Shablon tanlang —</option>${tmplOpts}</select></div>
       <textarea id="dm-reply" placeholder="Javob..." style="width:100%;min-height:100px;font-size:13px;font-family:'Poppins',sans-serif"></textarea>
       <button class="btn btn-dark" style="margin-top:8px;width:100%" onclick="sendReply()"><i class="fa-solid fa-paper-plane"></i> Yuborish</button>
-      ${replies?`<div class="detail-section">Javoblar</div><div class="reply-box">${replies}</div>`:''}`;
+      ${replies2?`<div class="dsec">Javoblar</div><div class="reply-box">${replies2}</div>`:''}`;
     document.getElementById("dm-right").innerHTML="";
   }
   openM("dm");
 }
 
-function applyTmpl(){ const s=document.getElementById("dm-tmpl"); if(s?.value) document.getElementById("dm-reply").value=s.value; }
-async function chStage(v){ await moveStage(dtId,v); openDetail('app',dtId); }
+function applyTmpl(){const s=document.getElementById("dm-tmpl");if(s?.value)document.getElementById("dm-reply").value=s.value;}
+async function chStage(v){await moveStage(dtId,v);openDetail('app',dtId);}
 async function setStar(id,n){
   document.querySelectorAll("#dm-stars .star").forEach((s,i)=>s.classList.toggle("on",i<n));
   const note=document.getElementById("dm-note")?.value||"";
@@ -840,7 +985,7 @@ async function sendReply(){
   }catch(e){alert("Xatolik.");}
 }
 
-/* ─ EDIT APP ─ */
+// ── EDIT APP ───────────────────────────────────────────────────────
 function openEditApp(id){
   editAppId=id; const a=allApps.find(x=>x.id===id); if(!a)return;
   document.getElementById("eam-t").textContent="Ariza #"+id+" tahrirlash";
@@ -869,21 +1014,24 @@ async function saveEditApp(){
 async function delApp(id){if(!confirm(`Ariza #${id} o'chirilsinmi?`))return;try{await fetch(`${API}/applications/${id}`,{method:"DELETE",credentials:"include"});await loadAll();}catch(e){alert("Xatolik.");}}
 async function delContact(id){if(!confirm("O'chirilsinmi?"))return;try{await fetch(`${API}/contacts/${id}`,{method:"DELETE",credentials:"include"});await loadAll();}catch(e){alert("Xatolik.");}}
 
-/* ─ VACANCIES ─ */
+// ── VACANCIES ──────────────────────────────────────────────────────
 function renderVacancies(list){
   const vacs=list||allVacancies;
   const el=document.getElementById("vac-list");
-  if(!vacs.length){el.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:28px">Vakansiyalar yo'q</p>`;return;}
+  if(!vacs.length){el.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:28px">Vakansiyalar yo'q. "Yangi vakansiya" tugmasini bosing.</p>`;return;}
   const stCl={open:"s-open",closed:"s-closed",paused:"s-paused"};
   const stLb={open:"Ochiq",closed:"Yopiq",paused:"Muzlatilgan"};
   el.innerHTML=vacs.map(v=>{
     const ac=allApps.filter(a=>a.detail===v.title).length;
     return `<div class="vac-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div class="vac-title">${h(v.title)}</div>
         <span class="badge ${stCl[v.status]||'s-open'}">${stLb[v.status]||v.status}</span>
       </div>
-      <div class="vac-dept"><i class="fa-solid fa-building"></i>${h(v.department)}</div>
+      <div class="vac-sub">
+        <span class="vac-chip"><i class="fa-solid fa-building"></i>${ORG_LABELS[v.org_type]||h(v.org_type||'—')}</span>
+        <span class="vac-chip"><i class="fa-solid fa-location-dot"></i>${h(v.branch||'—')}</span>
+      </div>
       <div class="vac-meta">
         <span><i class="fa-solid fa-users"></i>${v.slots||1} o'rin</span>
         <span><i class="fa-solid fa-file-lines"></i>${ac} ariza</span>
@@ -901,24 +1049,42 @@ function renderVacancies(list){
     </div>`;
   }).join('');
 }
+
 function filterVac(){
-  const d=document.getElementById("vf-d").value, s=document.getElementById("vf-s").value;
+  const org=document.getElementById("vf-org").value;
+  const branch=document.getElementById("vf-branch").value;
+  const st=document.getElementById("vf-s").value;
+
+  // Branch filtri org ga bog'liq
+  if(org){
+    const branches=ORG_BRANCHES[org]||[];
+    document.getElementById("vf-branch").innerHTML=`<option value="">Barcha filial</option>`+branches.map(b=>`<option value="${h(b)}">${h(b)}</option>`).join('');
+  } else {
+    document.getElementById("vf-branch").innerHTML=`<option value="">Barcha filial</option>`;
+  }
+
   let f=allVacancies;
-  if(d) f=f.filter(v=>v.department===d);
-  if(s) f=f.filter(v=>v.status===s);
+  if(org)    f=f.filter(v=>v.org_type===org);
+  if(branch) f=f.filter(v=>v.branch===branch);
+  if(st)     f=f.filter(v=>v.status===st);
   renderVacancies(f);
 }
+
 function filterByVac(title){
   showPage('applications',document.querySelector('[onclick*="applications"]'));
   document.getElementById("apps-table").innerHTML=appsHTML(allApps.filter(a=>a.detail===title));
 }
+
 function openVacM(id){
   editVacId=id||null;
   document.getElementById("vacm-t").textContent=id?"Vakansiyani tahrirlash":"Yangi vakansiya";
   if(id){
     const v=allVacancies.find(x=>x.id===id); if(!v)return;
     document.getElementById("v-title").value=v.title||"";
-    document.getElementById("v-dept").value=v.department||"Maktab";
+    document.getElementById("v-org").value=v.org_type||"";
+    onOrgChange();
+    // Set branch after options populated
+    setTimeout(()=>{ document.getElementById("v-branch").value=v.branch||""; },50);
     document.getElementById("v-open").value=v.open_date||"";
     document.getElementById("v-dead").value=v.deadline||"";
     document.getElementById("v-slots").value=v.slots||1;
@@ -927,6 +1093,8 @@ function openVacM(id){
     document.getElementById("v-bot").checked=v.show_in_bot!==false;
   }else{
     ["v-title","v-open","v-dead","v-desc"].forEach(i=>document.getElementById(i).value="");
+    document.getElementById("v-org").value="";
+    document.getElementById("v-branch").innerHTML=`<option value="">— Avval tashkilot tanlang —</option>`;
     document.getElementById("v-slots").value=1;
     document.getElementById("v-status").value="open";
     document.getElementById("v-bot").checked=true;
@@ -935,8 +1103,21 @@ function openVacM(id){
   openM("vacm");
 }
 async function saveVac(){
-  const p={title:document.getElementById("v-title").value.trim(),department:document.getElementById("v-dept").value,open_date:document.getElementById("v-open").value,deadline:document.getElementById("v-dead").value,slots:parseInt(document.getElementById("v-slots").value)||1,status:document.getElementById("v-status").value,description:document.getElementById("v-desc").value.trim(),show_in_bot:document.getElementById("v-bot").checked};
-  if(!p.title){alert("Lavozim nomi bo'sh!");return;}
+  const org=document.getElementById("v-org").value;
+  const branch=document.getElementById("v-branch").value;
+  const title=document.getElementById("v-title").value.trim();
+  if(!title){alert("Lavozim nomi bo'sh!");return;}
+  if(!org){alert("Tashkilot turini tanlang!");return;}
+  const p={
+    title, org_type:org, branch,
+    department: (ORG_LABELS[org]||org)+(branch?` — ${branch}`:""),
+    open_date:document.getElementById("v-open").value,
+    deadline:document.getElementById("v-dead").value,
+    slots:parseInt(document.getElementById("v-slots").value)||1,
+    status:document.getElementById("v-status").value,
+    description:document.getElementById("v-desc").value.trim(),
+    show_in_bot:document.getElementById("v-bot").checked,
+  };
   try{
     if(editVacId) await fetch(`${API}/vacancies/${editVacId}`,{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(p)});
     else await fetch(`${API}/vacancies`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(p)});
@@ -945,7 +1126,7 @@ async function saveVac(){
 }
 async function delVac(id){if(!confirm("Vakansiya o'chirilsinmi?"))return;try{await fetch(`${API}/vacancies/${id}`,{method:"DELETE",credentials:"include"});await loadAll();}catch(e){alert("Xatolik.");}}
 
-/* ─ TEMPLATES ─ */
+// ── TEMPLATES ──────────────────────────────────────────────────────
 function renderTemplates(){
   const el=document.getElementById("tmpl-list");
   if(!allTemplates.length){el.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:20px">Shablonlar yo'q</p>`;return;}
@@ -975,7 +1156,7 @@ async function saveTmpl(){
 }
 async function delTmpl(id){if(!confirm("Shablon o'chirilsinmi?"))return;try{await fetch(`${API}/templates/${id}`,{method:"DELETE",credentials:"include"});await loadAll();}catch(e){alert("Xatolik.");}}
 
-/* ─ EXCEL ─ */
+// ── EXCEL ──────────────────────────────────────────────────────────
 function exportExcel(type){
   const data=type==='contacts'?allContacts:allApps;
   if(!data?.length){alert("Ma'lumot yo'q!");return;}
@@ -988,7 +1169,7 @@ function exportExcel(type){
   XLSX.writeFile(wb,(type==='contacts'?"murojaatlar":"arizalar")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
 }
 
-/* ─ BOT BUTTONS ─ */
+// ── BOT BUTTONS ────────────────────────────────────────────────────
 function renderBtnTree(){
   const c=document.getElementById("btn-tree");
   if(!cfgData?.buttons){c.innerHTML='<p style="color:#9ca3af;text-align:center;padding:20px">Yuklanmadi</p>';return;}
@@ -1036,12 +1217,11 @@ async function delBtn(id){if(!confirm("O'chirilsinmi?"))return;try{await fetch(`
 async function saveWelcome(){const msg=document.getElementById("winp").value.trim();if(!msg)return;try{await fetch(`${API}/config/welcome`,{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({message:msg})});alert("✅ Saqlandi!");}catch(e){alert("Xatolik.");}}
 function findBtn(btns,id){for(const b of btns){if(b.id===id)return b;const f=findBtn(b.children||[],id);if(f)return f;}return null;}
 
-/* ─ MODAL ─ */
+// ── MODAL HELPERS ──────────────────────────────────────────────────
 function openM(id){document.getElementById(id).classList.add("open");}
 function closeM(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
-/* ─ INIT ─ */
 checkAuth();
 setInterval(loadAll,60000);
 </script>
