@@ -13,7 +13,7 @@
 :root{
   --bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;
   --border:#e5e7eb;--accent:#1e1e2e;
-  --indigo:#6366f1;--indigo-l:#eef2ff;
+  --indigo:#1a56db;--indigo-l:#eff6ff;
   --green:#15803d;--red:#dc2626;--blue:#0369a1;
   --r:14px;--rm:9px;
   --shadow:0 2px 8px rgba(0,0,0,.06);
@@ -119,7 +119,7 @@ body{background:var(--bg);color:var(--text);user-select:none}
   height:100%;flex-shrink:0;
   box-shadow:2px 0 8px rgba(0,0,0,.03);
 }
-.logo{font-size:18px;font-weight:700;margin-bottom:28px;padding-left:6px;display:flex;align-items:center;gap:10px}
+.logo{font-size:18px;font-weight:700;padding-left:0;display:flex;align-items:center;gap:10px}
 .logo i{color:var(--indigo);font-size:22px}
 .logo img{height:32px;width:auto;object-fit:contain}
 .nav-section{font-size:10px;font-weight:700;color:#d1d5db;text-transform:uppercase;letter-spacing:.8px;padding:0 10px;margin-bottom:4px;margin-top:12px}
@@ -312,6 +312,26 @@ textarea{resize:vertical;min-height:80px}
 .igb{font-size:17px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:.1s}
 .igb:hover{background:#f5f3ff}.igb.sel{border-color:var(--indigo);background:var(--indigo-l)}
 
+
+/* ═══ TOAST ═══ */
+#toast-wrap{position:fixed;top:20px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:12px;
+  background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.14);border:1px solid var(--border);
+  min-width:280px;max-width:360px;pointer-events:all;
+  animation:tslide .3s ease;transform-origin:right top}
+@keyframes tslide{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+.toast.hide{animation:thide .3s ease forwards}
+@keyframes thide{to{opacity:0;transform:translateX(40px)}}
+.toast-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.toast-success .toast-icon{background:#dcfce7;color:#15803d}
+.toast-error   .toast-icon{background:#fee2e2;color:#dc2626}
+.toast-info    .toast-icon{background:#dbeafe;color:#1d4ed8}
+.toast-warn    .toast-icon{background:#fef3c7;color:#b45309}
+.toast-body{flex:1;min-width:0}
+.toast-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.toast-msg{font-size:12px;color:var(--muted);line-height:1.4}
+.toast-close{background:none;border:none;color:#9ca3af;cursor:pointer;padding:2px;font-size:14px;line-height:1;flex-shrink:0;transition:.15s}
+.toast-close:hover{color:var(--text)}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:10px}
@@ -346,15 +366,14 @@ textarea{resize:vertical;min-height:80px}
 <div id="app">
 
 <aside class="sidebar">
-  <div class="logo">
-    <img src="https://img4.teletype.in/files/b4/19/b4199a12-9b48-4836-8388-4d4429ad8fa2.png" alt="logo"
-      onload="this.style.display='block';document.getElementById('logo-fb').style.display='none'"
-      onerror="this.style.display='none';document.getElementById('logo-fb').style.display='flex'"
-      style="display:block;height:32px;width:auto;object-fit:contain">
-    <div id="logo-fb" style="display:none;align-items:center;gap:8px">
-      <i class="fa-solid fa-graduation-cap" style="color:var(--indigo);font-size:22px"></i>
-      <span style="font-size:16px;font-weight:700">Mudarris ATS</span>
-    </div>
+  <div class="logo" style="display:flex;align-items:center;gap:10px;padding-left:4px;margin-bottom:28px">
+    <img id="sidebar-logo-img"
+      src="https://img4.teletype.in/files/b4/19/b4199a12-9b48-4836-8388-4d4429ad8fa2.png"
+      alt="Mudarris"
+      style="height:36px;width:auto;object-fit:contain;flex-shrink:0"
+      onerror="this.style.display='none';document.getElementById('sidebar-icon').style.display='inline-block'">
+    <i id="sidebar-icon" class="fa-solid fa-graduation-cap" style="display:none;color:var(--indigo);font-size:22px;flex-shrink:0"></i>
+    <span style="font-size:16px;font-weight:700;color:var(--text);white-space:nowrap">Mudarris ATS</span>
   </div>
 
   <div class="nav-section">Asosiy</div>
@@ -385,7 +404,22 @@ textarea{resize:vertical;min-height:80px}
     <h2 id="ptitle">Dashboard</h2>
     <div class="topbar-r">
       <div class="sinput-w"><i class="fa-solid fa-magnifying-glass"></i><input class="sinput" placeholder="Qidirish..." oninput="searchAll(this.value)"></div>
-      <button class="btn btn-dark btn-sm" onclick="loadAll()"><i class="fa-solid fa-rotate"></i> Yangilash</button>
+      <!-- Notification Bell -->
+      <div style="position:relative">
+        <button class="btn btn-dark btn-sm" id="notif-btn" onclick="toggleNotif()" style="padding:8px 12px;gap:0;position:relative">
+          <i class="fa-solid fa-bell"></i>
+          <span id="notif-cnt" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</span>
+        </button>
+        <!-- Dropdown -->
+        <div id="notif-drop" style="display:none;position:absolute;right:0;top:42px;width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);border:1px solid var(--border);z-index:300;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:14px;font-weight:700">Bildirishnomalar</span>
+            <button onclick="clearNotifs()" style="background:none;border:none;font-size:11px;color:var(--indigo);cursor:pointer;font-family:'Poppins',sans-serif">Hammasini o'chirish</button>
+          </div>
+          <div id="notif-list" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+      </div>
+      <button class="btn btn-dark btn-sm" onclick="loadAll()"><i class="fa-solid fa-rotate"></i></button>
     </div>
   </div>
 
@@ -612,6 +646,8 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div></div>
 
+<div id="toast-wrap"></div>
+
 <script>
 const API=window.location.origin+"/api";
 const ICONS=["🏢","💼","🏫","👶","📚","📞","💎","📍","📖","🗓","📅","🎯","🏆","⭐","🔥","💡","🎓","👨‍🏫","👩‍🏫","🏛","📋","✅","🔔","💬","📢","🌟","🎁","🚀","🏠","🌍","💻","📱","🎨","🛠","⚙️","🔑","💰","📊","📈","🤝","👥","🌈","🏋️","🎵","📸","✈️","🎪","🎭"];
@@ -677,7 +713,7 @@ function showApp(){
   document.getElementById("login-page").style.display="none";
   document.getElementById("app").classList.add("shown");
   if(!currentUser)return;
-  const roles={super_admin:"Super Admin",hr_manager:"HR Manager",recruiter:"Recruiter"};
+  const roles={super_admin:"Super Admin",hr_manager:"HR Menejer",recruiter:"Recruiter"};
   document.getElementById("uname").textContent=currentUser.name;
   document.getElementById("urole").textContent=roles[currentUser.role]||currentUser.role;
   document.getElementById("uav").textContent=(currentUser.name||"A")[0].toUpperCase();
@@ -697,6 +733,16 @@ async function loadAll(){
     populateFilters();
     if(cfgData.welcome_message) document.getElementById("winp").value=cfgData.welcome_message;
     setConn(true);
+    // Yangi arizalar notification
+    (function(){
+      const newApps=allApps.filter(a=>(a.stage||'new')==='new').length;
+      const newMsgs=allContacts.filter(c=>c.status==='new').length;
+      if(window._prevNewApps!==undefined && newApps>window._prevNewApps)
+        addNotif('info',`${newApps-window._prevNewApps} ta yangi ariza!`,`Jami ${newApps} ta yangi ariza kutilmoqda`);
+      if(window._prevNewMsgs!==undefined && newMsgs>window._prevNewMsgs)
+        addNotif('warn',`${newMsgs-window._prevNewMsgs} ta yangi murojaat!`,`${newMsgs} ta javob berilmagan murojaat bor`);
+      window._prevNewApps=newApps; window._prevNewMsgs=newMsgs;
+    })();
     const nc=allApps.filter(a=>(a.stage||'new')==='new').length;
     document.getElementById("nb-apps").textContent=nc;
     document.getElementById("nb-apps").style.display=nc?'':'none';
@@ -971,7 +1017,7 @@ async function saveStarNote(){
   const n=document.querySelectorAll("#dm-stars .star.on").length;
   const note=document.getElementById("dm-note")?.value||"";
   await fetch(`${API}/applications/${dtId}/star`,{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({stars:n,note})});
-  await loadAll(); alert("✅ Saqlandi!");
+  await loadAll(); toast('success','Saqlandi!','HR bahosi saqlandi.');
 }
 async function sendReply(){
   const txt=document.getElementById("dm-reply")?.value?.trim();
@@ -980,8 +1026,8 @@ async function sendReply(){
   try{
     const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({text:txt})});
     const d=await r.json();
-    if(d.success){closeM("dm");await loadAll();alert("✅ Javob yuborildi!");}
-    else alert("Xatolik: "+d.error);
+    if(d.success){closeM("dm");await loadAll();toast('success','Javob yuborildi!','Nomzodga Telegram orqali xabar yuborildi.');}
+    else toast('error','Xatolik',d.error);
   }catch(e){alert("Xatolik.");}
 }
 
@@ -1214,7 +1260,7 @@ async function saveBtnM(){
   }catch(e){alert("Xatolik.");}
 }
 async function delBtn(id){if(!confirm("O'chirilsinmi?"))return;try{await fetch(`${API}/buttons/${id}`,{method:"DELETE",credentials:"include"});await loadAll();}catch(e){alert("Xatolik.");}}
-async function saveWelcome(){const msg=document.getElementById("winp").value.trim();if(!msg)return;try{await fetch(`${API}/config/welcome`,{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({message:msg})});alert("✅ Saqlandi!");}catch(e){alert("Xatolik.");}}
+async function saveWelcome(){const msg=document.getElementById("winp").value.trim();if(!msg)return;try{await fetch(`${API}/config/welcome`,{method:"PUT",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({message:msg})});toast('success','Saqlandi!','Bot xabar yangilandi.');}catch(e){toast('error','Xatolik','Server bilan ulanishda muammo.');}}
 function findBtn(btns,id){for(const b of btns){if(b.id===id)return b;const f=findBtn(b.children||[],id);if(f)return f;}return null;}
 
 // ── MODAL HELPERS ──────────────────────────────────────────────────
@@ -1222,6 +1268,70 @@ function openM(id){document.getElementById(id).classList.add("open");}
 function closeM(id){document.getElementById(id).classList.remove("open");}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
+
+/* ─ TOAST ─────────────────────────────────────────────────────── */
+let _toastId=0;
+function toast(type,title,msg,duration=3500){
+  const icons={success:'fa-check',error:'fa-xmark',info:'fa-info',warn:'fa-triangle-exclamation'};
+  const id='t'+(++_toastId);
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;el.id=id;
+  el.innerHTML=`<div class="toast-icon"><i class="fa-solid ${icons[type]||'fa-info'}"></i></div>
+    <div class="toast-body"><div class="toast-title">${title}</div>${msg?`<div class="toast-msg">${msg}</div>`:''}</div>
+    <button class="toast-close" onclick="removeToast('${id}')">×</button>`;
+  document.getElementById('toast-wrap').prepend(el);
+  setTimeout(()=>removeToast(id),duration);
+}
+function removeToast(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.add('hide');setTimeout(()=>el.remove(),300);
+}
+
+/* ─ NOTIFICATION ───────────────────────────────────────────────── */
+let _notifs=[];
+function addNotif(type,title,msg){
+  _notifs.unshift({id:Date.now(),type,title,msg,time:new Date().toLocaleTimeString('uz',{hour:'2-digit',minute:'2-digit'})});
+  if(_notifs.length>30) _notifs.pop();
+  renderNotifList();
+  // ham toast ko'rsat
+  toast(type,title,msg,4000);
+}
+function renderNotifList(){
+  const cnt=document.getElementById('notif-cnt');
+  const list=document.getElementById('notif-list');
+  if(!cnt||!list)return;
+  const unread=_notifs.length;
+  cnt.textContent=unread>9?'9+':unread;
+  cnt.style.display=unread?'flex':'none';
+  if(!_notifs.length){
+    list.innerHTML=`<div style="text-align:center;padding:28px;font-size:13px;color:#9ca3af"><i class="fa-regular fa-bell-slash" style="font-size:28px;display:block;margin-bottom:8px"></i>Bildirishnomalar yo'q</div>`;
+    return;
+  }
+  const typeIcon={success:'fa-check-circle',error:'fa-xmark-circle',info:'fa-info-circle',warn:'fa-exclamation-triangle'};
+  const typeColor={success:'#15803d',error:'#dc2626',info:'#1a56db',warn:'#b45309'};
+  list.innerHTML=_notifs.map(n=>`
+    <div style="display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #f1f5f9;cursor:default" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+      <i class="fa-solid ${typeIcon[n.type]||'fa-info-circle'}" style="color:${typeColor[n.type]||'#1a56db'};font-size:16px;margin-top:2px;flex-shrink:0"></i>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:#111">${n.title}</div>
+        ${n.msg?`<div style="font-size:11px;color:#6b7280;margin-top:2px">${n.msg}</div>`:''}
+        <div style="font-size:10px;color:#9ca3af;margin-top:4px">${n.time}</div>
+      </div>
+    </div>`).join('');
+}
+function toggleNotif(){
+  const d=document.getElementById('notif-drop');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+function clearNotifs(){
+  _notifs=[];renderNotifList();
+  document.getElementById('notif-drop').style.display='none';
+}
+document.addEventListener('click',function(e){
+  const btn=document.getElementById('notif-btn');
+  const drop=document.getElementById('notif-drop');
+  if(drop&&btn&&!btn.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';
+});
 checkAuth();
 setInterval(loadAll,60000);
 </script>
