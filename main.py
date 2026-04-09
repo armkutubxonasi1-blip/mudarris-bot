@@ -30,15 +30,15 @@ PORT        = int(os.environ.get("PORT", 5000))
 SECRET_KEY  = os.environ.get("SECRET_KEY", "mudarris-secret-2026")
 APP_URL     = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 
-# ── Supabase (job_requests jadvalidan talabnomalarni olish) ────────────
+# ── Supabase (job_requests - xodim talabnomalar) ───────────────────────
 SB_URL = os.environ.get("SUPABASE_URL", "https://vfunkjtksjowziawzfkl.supabase.co")
 SB_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdW5ranRrc2pvd3ppYXd6ZmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODY1ODMsImV4cCI6MjA5MTA2MjU4M30.Os8qGR-DROLLdUWuZLqF3SaRhgSWbgBvuqYenGO53YQ")
 
 # ── Default users (login/parol) ────────────────────────────────────────
 DEFAULT_USERS = {
     "admin":     {"password": hashlib.md5(b"admin123").hexdigest(),    "role": "super_admin", "name": "Super Admin"},
-    "hr":        {"password": hashlib.md5(b"hr123").hexdigest(),        "role": "hr_manager",  "name": "HR Manager"},
-    "recruiter": {"password": hashlib.md5(b"recruiter123").hexdigest(), "role": "recruiter",   "name": "Recruiter"},
+    "hr":        {"password": hashlib.md5(b"hr123").hexdigest(),       "role": "hr_manager",  "name": "HR Manager"},
+    "recruiter": {"password": hashlib.md5(b"recruiter123").hexdigest(),   "role": "recruiter",   "name": "Recruiter"},
 }
 
 # ── Pipeline stages ────────────────────────────────────────────────────
@@ -122,7 +122,15 @@ bot_loop = None
 # ── Flask ──────────────────────────────────────────────────────────────
 flask_app = Flask(__name__, static_folder=".")
 flask_app.secret_key = SECRET_KEY
-CORS(flask_app, supports_credentials=True)
+flask_app.config.update(
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=False,
+    SESSION_COOKIE_HTTPONLY=True,
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+)
+CORS(flask_app, supports_credentials=True, origins="*", 
+     allow_headers=["Content-Type","Authorization"],
+     methods=["GET","POST","PUT","PATCH","DELETE","OPTIONS"])
 
 def login_required(f):
     @wraps(f)
@@ -530,14 +538,13 @@ def delete_button(btn_id):
 
 
 # ══════════════════════════════════════════════════════════════════════
-#  SUPABASE PROXY — job_requests (Talabnomalar)
+#  SUPABASE PROXY - Xodim Talabnomalar (job_requests)
 # ══════════════════════════════════════════════════════════════════════
-def sb_headers():
+def _sb_headers():
     return {
         "apikey": SB_KEY,
         "Authorization": f"Bearer {SB_KEY}",
         "Content-Type": "application/json",
-        "Prefer": "return=representation"
     }
 
 @flask_app.route("/api/job_requests", methods=["GET"])
@@ -546,7 +553,7 @@ def get_job_requests():
     try:
         r = req_lib.get(
             f"{SB_URL}/rest/v1/job_requests?select=*&order=created_at.desc",
-            headers=sb_headers(), timeout=10
+            headers=_sb_headers(), timeout=10
         )
         return jsonify(r.json()), r.status_code
     except Exception as e:
@@ -558,10 +565,10 @@ def update_job_request(job_id):
     try:
         req_lib.patch(
             f"{SB_URL}/rest/v1/job_requests?id=eq.{job_id}",
-            headers=sb_headers(),
+            headers={**_sb_headers(), "Prefer": "return=minimal"},
             json=request.json, timeout=10
         )
-        return jsonify({"success": True}), 200
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -571,11 +578,12 @@ def delete_job_request(job_id):
     try:
         req_lib.delete(
             f"{SB_URL}/rest/v1/job_requests?id=eq.{job_id}",
-            headers=sb_headers(), timeout=10
+            headers=_sb_headers(), timeout=10
         )
-        return jsonify({"success": True}), 200
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # ══════════════════════════════════════════════════════════════════════
 #  BOT

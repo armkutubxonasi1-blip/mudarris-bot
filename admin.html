@@ -340,30 +340,33 @@ textarea{resize:vertical;min-height:80px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:10px}
 
-/* ═══════════════════════ TALABNOMALAR ═══════════════════════ */
+/* TALABNOMALAR */
+.tl-stats-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.tl-stat-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 20px;cursor:pointer;transition:.15s;min-width:110px}
+.tl-stat-card:hover,.tl-stat-card.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.tl-stat-card .tl-cnt{font-size:24px;font-weight:700;line-height:1;display:block}
+.tl-stat-card .tl-lbl{font-size:11px;font-weight:600;margin-top:4px;display:block;opacity:.8}
 .tl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
 .tl-card{background:var(--card);border-radius:var(--r);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);transition:.15s;cursor:pointer}
 .tl-card:hover{border-color:var(--indigo);box-shadow:0 4px 14px rgba(99,102,241,.1);transform:translateY(-1px)}
-.tl-title{font-size:14px;font-weight:700;margin-bottom:6px}
-.tl-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tl-card-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.tl-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .tl-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:#f1f5f9;border-radius:6px;font-size:11px;color:#475569;font-weight:500}
 .tl-meta{font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
 .tl-meta span{display:flex;align-items:center;gap:4px}
-.tl-status-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.tl-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--rm);padding:12px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
-.tl-stat:hover,.tl-stat.active{background:var(--indigo);color:#fff;border-color:var(--indigo)}
-.tl-stat .cnt{font-size:18px;font-weight:700;display:block}
-/* Talabnoma detail modal */
+.tl-loading{display:none;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:12px 0}
+.s-waiting{background:#fef3c7;color:#b45309}
+.s-reviewing{background:#dbeafe;color:#1d4ed8}
+.s-approved{background:#dcfce7;color:#15803d}
+.s-cancelled{background:#fee2e2;color:#b91c1c}
 .td-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
 .td-row:last-child{border-bottom:none}
 .td-k{font-size:11px;font-weight:600;color:var(--muted);min-width:140px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0}
 .td-v{font-size:13px;color:#334155;flex:1;word-break:break-word}
-.s-waiting{background:#fef3c7;color:#b45309}
-.s-approved{background:#dcfce7;color:#15803d}
-.s-inprogress{background:#dbeafe;color:#1d4ed8}
-.s-cancelled{background:#fee2e2;color:#b91c1c}
 </style>
 </head>
+<body>
+
 <body>
 
 <!-- ══════════════════ LOGIN ══════════════════ -->
@@ -416,7 +419,8 @@ textarea{resize:vertical;min-height:80px}
   <div class="nav-item" onclick="showPage('contacts',this)"><i class="fa-solid fa-comment-dots" style="color:#10b981"></i> Murojaatlar<span class="nav-badge" id="nb-ct" style="display:none">0</span></div>
   <div class="nav-item" onclick="showPage('templates',this)"><i class="fa-solid fa-comment-medical" style="color:#ec4899"></i> Shablonlar</div>
 
-  <div class="nav-item" onclick="showPage('talabnomalar',this)"><i class="fa-solid fa-file-invoice" style="color:#f59e0b"></i> Talabnomalar<span class="nav-badge" id="nb-tl" style="display:none">0</span></div>
+  <div class="nav-section">HR</div>
+  <div class="nav-item" onclick="showPage('talabnomalar',this);loadTalabnomalar()"><i class="fa-solid fa-file-invoice" style="color:#f59e0b"></i> Talabnomalar<span class="nav-badge" id="nb-tl" style="display:none">0</span></div>
 
   <div class="nav-section">Sozlamalar</div>
   <div class="nav-item" onclick="showPage('buttons',this)"><i class="fa-solid fa-sliders" style="color:#6366f1"></i> Bot tugmalari</div>
@@ -541,6 +545,36 @@ textarea{resize:vertical;min-height:80px}
       <div class="tmpl-list" id="tmpl-list"></div>
     </div>
 
+
+    <!-- TALABNOMALAR -->
+    <div class="page" id="page-talabnomalar">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="filters">
+          <select id="tl-dept" onchange="renderTalabnomalar()" class="fsel">
+            <option value="">Barcha bo'lim</option>
+            <option value="maktab">🏫 Maktab</option>
+            <option value="kids">👶 Bog'cha</option>
+            <option value="akademiya">📚 O'quv markaz</option>
+          </select>
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="loadTalabnomalar()"><i class="fa-solid fa-rotate"></i> Yangilash</button>
+      </div>
+      <div class="tl-stats-bar">
+        <div class="tl-stat-card active" onclick="tlSetStatus('',this)"><span class="tl-cnt" id="tl-cnt-all">—</span><span class="tl-lbl">Jami</span></div>
+        <div class="tl-stat-card" onclick="tlSetStatus('Kutish jarayonida',this)"><span class="tl-cnt" id="tl-cnt-wait">—</span><span class="tl-lbl">Kutish</span></div>
+        <div class="tl-stat-card" onclick="tlSetStatus('Ko\'rib chiqilmoqda',this)"><span class="tl-cnt" id="tl-cnt-review">—</span><span class="tl-lbl">Ko'rib chiqilmoqda</span></div>
+        <div class="tl-stat-card" onclick="tlSetStatus('Tasdiqlandi',this)"><span class="tl-cnt" id="tl-cnt-ok">—</span><span class="tl-lbl">Tasdiqlandi</span></div>
+        <div class="tl-stat-card" onclick="tlSetStatus('Bekor qilindi',this)"><span class="tl-cnt" id="tl-cnt-no">—</span><span class="tl-lbl">Bekor qilindi</span></div>
+      </div>
+      <div class="tl-loading" id="tl-loading"><i class="fa-solid fa-spinner fa-spin"></i> Yuklanmoqda...</div>
+      <div class="tl-grid" id="tl-grid">
+        <p style="color:#9ca3af;text-align:center;padding:40px;grid-column:1/-1">
+          <i class="fa-solid fa-file-invoice" style="font-size:32px;display:block;margin-bottom:12px;opacity:.3"></i>
+          Talabnomalar yuklanmadi. "Yangilash" tugmasini bosing.
+        </p>
+      </div>
+    </div>
+
     <!-- BOT TUGMALARI -->
     <div class="page" id="page-buttons">
       <div class="wcard">
@@ -554,177 +588,134 @@ textarea{resize:vertical;min-height:80px}
       <div id="btn-tree"></div>
     </div>
 
-    <!-- TALABNOMALAR (Supabase job_requests) -->
-    <div class="page" id="page-talabnomalar">
-      <div class="tl-status-bar" id="tl-stat-bar">
-        <div class="tl-stat active" onclick="filterTalabnoma(this,'')">
-          <span><i class="fa-solid fa-list"></i> Barchasi</span><span class="cnt" id="tl-cnt-all">0</span>
-        </div>
-        <div class="tl-stat" onclick="filterTalabnoma(this,'Kutish jarayonida')">
-          <span>🕐 Kutish</span><span class="cnt" id="tl-cnt-wait">0</span>
-        </div>
-        <div class="tl-stat" onclick="filterTalabnoma(this,"Ko\'rib chiqilmoqda")">
-          <span>👁 Ko'rib chiqilmoqda</span><span class="cnt" id="tl-cnt-review">0</span>
-        </div>
-        <div class="tl-stat" onclick="filterTalabnoma(this,'Tasdiqlandi')">
-          <span>✅ Tasdiqlandi</span><span class="cnt" id="tl-cnt-ok">0</span>
-        </div>
-        <div class="tl-stat" onclick="filterTalabnoma(this,'Bekor qilindi')">
-          <span>❌ Bekor</span><span class="cnt" id="tl-cnt-no">0</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-        <select id="tl-dept" class="fsel" onchange="applyTalabnomaDept()">
-          <option value="">Barcha bo'lim</option>
-          <option value="Maktab">🏫 Maktab</option>
-          <option value="Kids">👶 Bog'cha</option>
-          <option value="Akademiya">📚 Akademiya</option>
-        </select>
-        <button class="btn btn-dark btn-sm" onclick="loadTalabnomalar()"><i class="fa-solid fa-rotate"></i> Yangilash</button>
-        <span id="tl-loading" style="font-size:12px;color:var(--muted);display:none"><i class="fa-solid fa-spinner fa-spin"></i> Yuklanmoqda...</span>
-      </div>
-      <div class="tl-grid" id="tl-grid">
-        <p style="color:#9ca3af;text-align:center;padding:40px;grid-column:1/-1">Yuklanmoqda...</p>
-      </div>
-    </div>
-
   </div>
 </div>
 </div><!-- #app -->
-
-<!-- Talabnoma Detail Modal -->
-<div class="overlay" id="tlm"><div class="modal modal-lg" style="max-width:680px">
-  <div class="mhead">
-    <h3 id="tlm-title">Talabnoma</h3>
-    <button class="mclose" onclick="closeM('tlm')">×</button>
-  </div>
-  <div id="tlm-body"></div>
-  <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap" id="tlm-actions"></div>
-</div></div>
-
-<!-- ══════════════════ MODALS ══════════════════ -->
-
-<!-- Detail -->
-<div class="overlay" id="dm"><div class="modal modal-lg">
-  <div class="mhead"><h3 id="dm-t">Tafsilot</h3><button class="mclose" onclick="closeM('dm')">×</button></div>
-  <div id="dm-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-    <div id="dm-left"></div><div id="dm-right"></div>
-  </div>
-</div></div>
-
-<!-- CV -->
-<div class="overlay" id="cvm"><div class="modal modal-lg" style="max-width:700px">
-  <div class="mhead">
-    <h3 id="cv-title">📎 CV</h3>
-    <div style="display:flex;gap:8px;align-items:center">
-      <a id="cv-dl" href="#" target="_blank" class="btn btn-primary btn-sm"><i class="fa-solid fa-download"></i> Yuklab olish</a>
-      <button class="mclose" onclick="closeM('cvm')">×</button>
-    </div>
-  </div>
-  <div id="cv-body"></div>
-</div></div>
-
-<!-- Edit App -->
-<div class="overlay" id="eam"><div class="modal modal-sm">
-  <div class="mhead"><h3 id="eam-t">Tahrirlash</h3><button class="mclose" onclick="closeM('eam')">×</button></div>
-  <div id="eam-b"></div>
-  <div class="mf">
-    <button class="btn btn-primary" onclick="saveEditApp()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
-    <button class="btn btn-ghost" onclick="closeM('eam')">Bekor</button>
-  </div>
-</div></div>
-
-<!-- Vacancy Modal -->
-<div class="overlay" id="vacm"><div class="modal modal-md">
-  <div class="mhead"><h3 id="vacm-t">Yangi vakansiya</h3><button class="mclose" onclick="closeM('vacm')">×</button></div>
-
-  <div class="fg-row">
-    <div class="fg">
-      <label class="fl">Lavozim nomi</label>
-      <input type="text" id="v-title" placeholder="Masalan: Matematika o'qituvchisi">
-    </div>
-    <div class="fg">
-      <label class="fl">Status</label>
-      <select id="v-status" style="width:100%">
-        <option value="open">Ochiq</option>
-        <option value="closed">Yopiq</option>
-        <option value="paused">Muzlatilgan</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Tashkilot tanlash -->
-  <div class="fg-row">
-    <div class="fg">
-      <label class="fl">Tashkilot turi</label>
-      <select id="v-org" onchange="onOrgChange()" style="width:100%">
-        <option value="">— Tanlang —</option>
-        <option value="maktab">🏫 Maktab</option>
-        <option value="bogcha">👶 Bog'cha</option>
-        <option value="oquv">📚 O'quv markaz</option>
-        <option value="admin">🏢 Admin / Boshqaruv</option>
-        <option value="oshxona">🍽 Oshxona</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label class="fl">Filial / Maktab nomi</label>
-      <select id="v-branch" style="width:100%">
-        <option value="">— Avval tashkilot tanlang —</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="fg-row">
-    <div class="fg"><label class="fl">Ochilgan sana</label><input type="date" id="v-open"></div>
-    <div class="fg"><label class="fl">Deadline</label><input type="date" id="v-dead"></div>
-  </div>
-  <div class="fg-row">
-    <div class="fg"><label class="fl">O'rin soni</label><input type="number" id="v-slots" value="1" min="1"></div>
-    <div class="fg">
-      <label class="fl">Botda ko'rsatilsin</label>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
-        <label class="toggle"><input type="checkbox" id="v-bot" checked><span class="tslider"></span></label>
-        <span style="font-size:13px;color:var(--muted)">Ha / Yo'q</span>
-      </div>
-    </div>
-  </div>
-  <div class="fg"><label class="fl">Tavsif (ixtiyoriy)</label><textarea id="v-desc" placeholder="Vakansiya haqida qisqacha..."></textarea></div>
-
-  <div class="mf">
-    <button class="btn btn-primary" onclick="saveVac()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
-    <button class="btn btn-ghost" onclick="closeM('vacm')">Bekor</button>
-  </div>
-</div></div>
-
-<!-- Template -->
-<div class="overlay" id="tmplm"><div class="modal modal-sm">
-  <div class="mhead"><h3 id="tmplm-t">Yangi shablon</h3><button class="mclose" onclick="closeM('tmplm')">×</button></div>
-  <div class="fg"><label class="fl">Shablon nomi</label><input type="text" id="tm-name" placeholder="Masalan: Intervyuga taklif"></div>
-  <div class="fg"><label class="fl">Matn</label><textarea id="tm-text" style="min-height:120px" placeholder="Foydalanuvchiga yuboriladigan xabar..."></textarea></div>
-  <div class="mf">
-    <button class="btn btn-primary" onclick="saveTmpl()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
-    <button class="btn btn-ghost" onclick="closeM('tmplm')">Bekor</button>
-  </div>
-</div></div>
-
-<!-- Bot Button -->
-<div class="overlay" id="btnm"><div class="modal modal-sm">
-  <div class="mhead"><h3 id="btnm-t">Tugma</h3><button class="mclose" onclick="closeM('btnm')">×</button></div>
-  <div class="fg"><label class="fl">Icon</label><div class="ig" id="igrid"></div><input type="text" id="ci" placeholder="Yoki emoji: 🎯" oninput="setCI(this.value)" style="width:100%"></div>
-  <div class="fg"><label class="fl">Matn</label><input type="text" id="bt" oninput="updPrev()" style="width:100%"></div>
-  <div class="fg"><label class="fl">Ko'rinishi</label><div style="background:#f8fafc;border-radius:8px;padding:8px 12px"><span id="bprev" style="font-size:14px;font-weight:500">—</span></div></div>
-  <div class="fg"><label class="fl">Turi</label><select id="btype" onchange="onBType()" style="width:100%"><option value="message">💬 Xabar</option><option value="menu">📋 Menyu</option><option value="application">📝 Ariza</option></select></div>
-  <div class="fg" id="bsecf" style="display:none"><label class="fl">Bo'lim nomi</label><input type="text" id="bsec" style="width:100%"></div>
-  <div class="fg"><label class="fl">Xabar matni</label><textarea id="bmsg"></textarea></div>
-  <div class="mf">
-    <button class="btn btn-primary" onclick="saveBtnM()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
-    <button class="btn btn-ghost" onclick="closeM('btnm')">Bekor</button>
-  </div>
-</div></div>
-
 <div id="toast-wrap"></div>
 
+<!-- DETAIL MODAL -->
+<div class="overlay" id="dm">
+  <div class="modal modal-lg">
+    <div class="mhead"><h3 id="dm-t">Tafsilot</h3><button class="mclose" onclick="closeM('dm')">×</button></div>
+    <div id="dm-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div id="dm-left"></div><div id="dm-right"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CV MODAL -->
+<div class="overlay" id="cvm">
+  <div class="modal modal-md">
+    <div class="mhead"><h3>CV / Hujjat</h3><button class="mclose" onclick="closeM('cvm')">×</button></div>
+    <div id="cv-frame" style="text-align:center;min-height:200px"></div>
+  </div>
+</div>
+
+<!-- EDIT APP MODAL -->
+<div class="overlay" id="eam">
+  <div class="modal modal-md">
+    <div class="mhead"><h3 id="eam-t">Tahrirlash</h3><button class="mclose" onclick="closeM('eam')">×</button></div>
+    <div id="eam-b"></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeM('eam')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveEditApp()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- VACANCY MODAL -->
+<div class="overlay" id="vacm">
+  <div class="modal modal-md">
+    <div class="mhead"><h3 id="vacm-t">Vakansiya</h3><button class="mclose" onclick="closeM('vacm')">×</button></div>
+    <div class="fg"><label class="fl">Lavozim nomi *</label><input type="text" id="v-title" style="width:100%"></div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Tashkilot *</label>
+        <select id="v-org" class="fsel" style="width:100%" onchange="onOrgChange()">
+          <option value="">— Tanlang —</option>
+          <option value="maktab">🏫 Maktab</option>
+          <option value="bogcha">👶 Bog'cha</option>
+          <option value="oquv">📚 O'quv markaz</option>
+          <option value="admin">🏢 Admin</option>
+          <option value="oshxona">🍽 Oshxona</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Filial</label>
+        <select id="v-branch" class="fsel" style="width:100%"><option value="">— Avval tashkilot —</option></select>
+      </div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">Ochilgan sana</label><input type="date" id="v-open" style="width:100%"></div>
+      <div class="fg"><label class="fl">Deadline</label><input type="date" id="v-dead" style="width:100%"></div>
+    </div>
+    <div class="fg-row">
+      <div class="fg"><label class="fl">O'rinlar soni</label><input type="number" id="v-slots" value="1" min="1" style="width:100%"></div>
+      <div class="fg"><label class="fl">Status</label>
+        <select id="v-status" class="fsel" style="width:100%">
+          <option value="open">Ochiq</option>
+          <option value="closed">Yopiq</option>
+          <option value="paused">Muzlatilgan</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Tavsif</label><textarea id="v-desc" style="width:100%"></textarea></div>
+    <div class="fg" style="display:flex;align-items:center;gap:10px">
+      <label class="toggle"><input type="checkbox" id="v-bot" checked><span class="tslider"></span></label>
+      <span style="font-size:13px">Botda ko'rsatish</span>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeM('vacm')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveVac()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE MODAL -->
+<div class="overlay" id="tmplm">
+  <div class="modal modal-sm">
+    <div class="mhead"><h3 id="tmplm-t">Shablon</h3><button class="mclose" onclick="closeM('tmplm')">×</button></div>
+    <div class="fg"><label class="fl">Nomi *</label><input type="text" id="tm-name" style="width:100%"></div>
+    <div class="fg"><label class="fl">Matn *</label><textarea id="tm-text" style="width:100%;min-height:100px"></textarea></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeM('tmplm')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveTmpl()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUTTON MODAL -->
+<div class="overlay" id="btnm">
+  <div class="modal modal-md">
+    <div class="mhead"><h3 id="btnm-t">Tugma</h3><button class="mclose" onclick="closeM('btnm')">×</button></div>
+    <div class="fg"><label class="fl">Matn *</label><input type="text" id="bt" style="width:100%" oninput="updPrev()"></div>
+    <div class="fg"><label class="fl">Emoji (ixtiyoriy)</label><input type="text" id="ci" placeholder="Qo'lda kiriting yoki pastdan tanlang" style="width:100%" oninput="setCI(this.value)"></div>
+    <div class="ig" id="igrid"></div>
+    <div style="font-size:13px;margin-bottom:14px">Ko'rinish: <b id="bprev">—</b></div>
+    <div class="fg"><label class="fl">Tur</label>
+      <select id="btype" class="fsel" style="width:100%" onchange="onBType()">
+        <option value="message">💬 Xabar</option>
+        <option value="menu">📋 Menyu</option>
+        <option value="application">📝 Ariza</option>
+      </select>
+    </div>
+    <div class="fg"><label class="fl">Xabar matni</label><textarea id="bmsg" style="width:100%;min-height:70px"></textarea></div>
+    <div class="fg" id="bsecf" style="display:none"><label class="fl">Bo'lim (ariza uchun)</label><input type="text" id="bsec" style="width:100%"></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="closeM('btnm')">Bekor</button>
+      <button class="btn btn-primary" onclick="saveBtnM()"><i class="fa-solid fa-floppy-disk"></i> Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- TALABNOMA DETAIL MODAL -->
+<div class="overlay" id="tlm">
+  <div class="modal modal-lg">
+    <div class="mhead"><h3 id="tlm-title">Talabnoma</h3><button class="mclose" onclick="closeM('tlm')">×</button></div>
+    <div id="tlm-body"></div>
+  </div>
+</div>
+
 <script>
+
 const API=window.location.origin+"/api";
 const ICONS=["🏢","💼","🏫","👶","📚","📞","💎","📍","📖","🗓","📅","🎯","🏆","⭐","🔥","💡","🎓","👨‍🏫","👩‍🏫","🏛","📋","✅","🔔","💬","📢","🌟","🎁","🚀","🏠","🌍","💻","📱","🎨","🛠","⚙️","🔑","💰","📊","📈","🤝","👥","🌈","🏋️","🎵","📸","✈️","🎪","🎭"];
 
@@ -771,16 +762,16 @@ async function doLogin(){
   document.getElementById("lerr").style.display="none";
   const u=document.getElementById("l-u").value.trim(), p=document.getElementById("l-p").value.trim();
   try{
-    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({username:u,password:p})});
+    const r=await fetch(`${API}/login`,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({username:u,password:p})});
     const d=await r.json();
     if(d.success){ currentUser=d.user; showApp(); await loadAll(); }
     else{ document.getElementById("lerr").style.display="block"; document.getElementById("l-p").value=""; }
   }catch(e){ document.getElementById("lerr").style.display="block"; }
 }
-async function doLogout(){ await fetch("/api/logout",{method:"POST",credentials:"include"}); location.reload(); }
+async function doLogout(){ await fetch(`${API}/logout`,{method:"POST",credentials:"include"}); location.reload(); }
 async function checkAuth(){
   try{
-    const r=await fetch("/api/me",{credentials:"include"});
+    const r=await fetch(`${API}/me`,{credentials:"include"});
     const d=await r.json();
     if(d.user){ currentUser=d.user; showApp(); await loadAll(); }
   }catch(e){}
@@ -871,7 +862,7 @@ function showPage(id,el){
   document.getElementById("page-"+id).classList.add("active");
   document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
   el?.classList.add("active");
-  const tt={dashboard:"Dashboard",pipeline:"Pipeline — Kanban",applications:"Arizalar",vacancies:"Vakansiyalar",contacts:"Murojaatlar",templates:"Javob shablonlari",buttons:"Bot tugmalari"};
+  const tt={dashboard:"Dashboard",pipeline:"Pipeline — Kanban",applications:"Arizalar",vacancies:"Vakansiyalar",contacts:"Murojaatlar",templates:"Javob shablonlari",talabnomalar:"Xodim Talabnomalar",buttons:"Bot tugmalari"};
   document.getElementById("ptitle").textContent=tt[id]||id;
 }
 
@@ -1409,87 +1400,70 @@ document.addEventListener('click',function(e){
   if(drop&&btn&&!btn.contains(e.target)&&!drop.contains(e.target))drop.style.display='none';
 });
 
-// ── TALABNOMALAR (Supabase) ────────────────────────────────────────
-// Supabase so'rovlar endi Flask /api/job_requests orqali o'tadi
+// ── TALABNOMALAR ──────────────────────────────────────────────
+let allTalabnomalar=[], tlFilterStatus='', tlCurrentId=null;
 
-let allTalabnomalar = [];
-let tlFilterStatus = '';
-let tlFilterDept = '';
-let currentTlId = null;
-
-async function loadTalabnomalar() {
-  document.getElementById('tl-loading').style.display = 'inline-flex';
-  try {
-    const res = await fetch('/api/job_requests', {
-      credentials: 'include'
-    });
-    if (!res.ok) throw new Error('Server xatolik: ' + res.status);
-    allTalabnomalar = await res.json();
-    updateTalabnomaStats();
+async function loadTalabnomalar(){
+  const grid=document.getElementById('tl-grid');
+  const loader=document.getElementById('tl-loading');
+  if(!grid)return;
+  loader.style.display='flex';
+  grid.innerHTML='';
+  try{
+    const res=await fetch(`${API}/job_requests`,{credentials:'include'});
+    if(res.status===401){location.reload();return;}
+    if(!res.ok)throw new Error('Server xatolik: '+res.status);
+    allTalabnomalar=await res.json();
+    updateTlStats();
     renderTalabnomalar();
-    // Badge
-    const waiting = allTalabnomalar.filter(t => (t.status||'Kutish jarayonida') === 'Kutish jarayonida').length;
-    const nb = document.getElementById('nb-tl');
-    nb.textContent = waiting;
-    nb.style.display = waiting ? '' : 'none';
-  } catch(e) {
-    document.getElementById('tl-grid').innerHTML = `<p style="color:#dc2626;text-align:center;padding:40px;grid-column:1/-1"><i class="fa-solid fa-circle-exclamation"></i> Supabase dan ma'lumot yuklanmadi: ${e.message}</p>`;
-  } finally {
-    document.getElementById('tl-loading').style.display = 'none';
+    const waiting=allTalabnomalar.filter(t=>(t.status||'Kutish jarayonida')==='Kutish jarayonida').length;
+    const nb=document.getElementById('nb-tl');
+    if(nb){nb.textContent=waiting;nb.style.display=waiting?'':'none';}
+  }catch(e){
+    grid.innerHTML=`<p style="color:#dc2626;text-align:center;padding:40px;grid-column:1/-1"><i class="fa-solid fa-circle-exclamation"></i> Yuklanmadi: ${h(e.message)}</p>`;
+  }finally{
+    loader.style.display='none';
   }
 }
 
-function updateTalabnomaStats() {
-  const data = allTalabnomalar;
-  document.getElementById('tl-cnt-all').textContent = data.length;
-  document.getElementById('tl-cnt-wait').textContent = data.filter(t => (t.status||'Kutish jarayonida') === 'Kutish jarayonida').length;
-  document.getElementById('tl-cnt-review').textContent = data.filter(t => t.status === "Ko'rib chiqilmoqda").length;
-  document.getElementById('tl-cnt-ok').textContent = data.filter(t => t.status === 'Tasdiqlandi').length;
-  document.getElementById('tl-cnt-no').textContent = data.filter(t => t.status === 'Bekor qilindi').length;
+function updateTlStats(){
+  const d=allTalabnomalar;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('tl-cnt-all',d.length);
+  set('tl-cnt-wait',d.filter(t=>(t.status||'Kutish jarayonida')==='Kutish jarayonida').length);
+  set('tl-cnt-review',d.filter(t=>t.status==="Ko'rib chiqilmoqda").length);
+  set('tl-cnt-ok',d.filter(t=>t.status==='Tasdiqlandi').length);
+  set('tl-cnt-no',d.filter(t=>t.status==='Bekor qilindi').length);
 }
 
-function filterTalabnoma(el, status) {
-  tlFilterStatus = status;
-  document.querySelectorAll('.tl-stat').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
+function tlSetStatus(status,el){
+  tlFilterStatus=status;
+  document.querySelectorAll('.tl-stat-card').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
   renderTalabnomalar();
 }
 
-function applyTalabnomaDept() {
-  tlFilterDept = document.getElementById('tl-dept').value;
-  renderTalabnomalar();
-}
-
-function renderTalabnomalar() {
-  let list = allTalabnomalar;
-  if (tlFilterStatus) list = list.filter(t => (t.status||'Kutish jarayonida') === tlFilterStatus);
-  if (tlFilterDept) list = list.filter(t => (t.department||'').toLowerCase() === tlFilterDept.toLowerCase());
-  
-  const grid = document.getElementById('tl-grid');
-  if (!list.length) {
-    grid.innerHTML = `<p style="color:#9ca3af;text-align:center;padding:40px;grid-column:1/-1"><i class="fa-regular fa-folder-open" style="font-size:32px;display:block;margin-bottom:12px"></i>Talabnomalar yo'q</p>`;
+function renderTalabnomalar(){
+  const dept=(document.getElementById('tl-dept')?.value||'').toLowerCase();
+  let list=allTalabnomalar;
+  if(tlFilterStatus)list=list.filter(t=>(t.status||'Kutish jarayonida')===tlFilterStatus);
+  if(dept)list=list.filter(t=>(t.department||'').toLowerCase().includes(dept));
+  const grid=document.getElementById('tl-grid');
+  if(!grid)return;
+  if(!list.length){
+    grid.innerHTML=`<p style="color:#9ca3af;text-align:center;padding:40px;grid-column:1/-1"><i class="fa-regular fa-folder-open" style="font-size:32px;display:block;margin-bottom:12px"></i>Talabnomalar yo'q</p>`;
     return;
   }
-  
-  const statusClass = {
-    'Kutish jarayonida': 's-waiting',
-    "Ko'rib chiqilmoqda": 's-reviewed',
-    'Tasdiqlandi': 's-hired',
-    'Bekor qilindi': 's-rejected'
-  };
-  const deptIcon = { maktab:'🏫', kids:'👶', akademiya:'📚' };
-
-  grid.innerHTML = list.map(t => {
-    const st = t.status || 'Kutish jarayonida';
-    const dept = (t.department||'').toLowerCase();
-    const icon = deptIcon[dept] || '📋';
-    const dateStr = t.created_at ? new Date(t.created_at).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-    return `<div class="tl-card" onclick="openTalabnoma('${t.id}')">
+  const stCl={'Kutish jarayonida':'s-waiting',"Ko'rib chiqilmoqda":'s-reviewing','Tasdiqlandi':'s-approved','Bekor qilindi':'s-cancelled'};
+  grid.innerHTML=list.map(t=>{
+    const st=t.status||'Kutish jarayonida';
+    const dateStr=t.created_at?new Date(t.created_at).toLocaleDateString('uz-UZ',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    return`<div class="tl-card" onclick="openTalabnoma('${t.id}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div class="tl-title">${icon} ${h(t.position_name||'—')}</div>
-        <span class="badge ${statusClass[st]||'s-new'}" style="flex-shrink:0;margin-left:8px">${h(st)}</span>
+        <div class="tl-card-title">📋 ${h(t.position_name||'—')}</div>
+        <span class="badge ${stCl[st]||'s-new'}" style="flex-shrink:0;margin-left:8px">${h(st)}</span>
       </div>
-      <div class="tl-row">
+      <div class="tl-chips">
         <span class="tl-chip"><i class="fa-solid fa-building"></i>${h(t.department||'—')}</span>
         <span class="tl-chip"><i class="fa-solid fa-location-dot"></i>${h(t.branch||'—')}</span>
         <span class="tl-chip"><i class="fa-solid fa-users"></i>${t.employee_count||1} kishi</span>
@@ -1504,23 +1478,15 @@ function renderTalabnomalar() {
   }).join('');
 }
 
-async function openTalabnoma(id) {
-  const t = allTalabnomalar.find(x => x.id === id);
-  if (!t) return;
-  currentTlId = id;
-  document.getElementById('tlm-title').textContent = `📋 Talabnoma — ${t.position_name||''}`;
-  
-  const dateStr = t.created_at ? new Date(t.created_at).toLocaleString('uz-UZ') : '—';
-  const statusClass = {
-    'Kutish jarayonida': 's-waiting',
-    "Ko'rib chiqilmoqda": 's-reviewed',
-    'Tasdiqlandi': 's-hired',
-    'Bekor qilindi': 's-rejected'
-  };
-  const st = t.status || 'Kutish jarayonida';
-
-  document.getElementById('tlm-body').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+function openTalabnoma(id){
+  const t=allTalabnomalar.find(x=>x.id===id);if(!t)return;
+  tlCurrentId=id;
+  document.getElementById('tlm-title').textContent=`📋 Talabnoma — ${t.position_name||''}`;
+  const st=t.status||'Kutish jarayonida';
+  const stCl={'Kutish jarayonida':'s-waiting',"Ko'rib chiqilmoqda":'s-reviewing','Tasdiqlandi':'s-approved','Bekor qilindi':'s-cancelled'};
+  const dateStr=t.created_at?new Date(t.created_at).toLocaleString('uz-UZ'):'—';
+  document.getElementById('tlm-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
         <div class="dsec">Asosiy ma'lumot</div>
         <div class="td-row"><span class="td-k">Bo'lim</span><span class="td-v">${h(t.department||'—')}</span></div>
@@ -1530,20 +1496,18 @@ async function openTalabnoma(id) {
         <div class="td-row"><span class="td-k">Jins talabi</span><span class="td-v">${h(t.gender_requirement||'—')}</span></div>
         <div class="td-row"><span class="td-k">Bandlik turi</span><span class="td-v">${h(t.employment_type||'—')}</span></div>
         <div class="td-row"><span class="td-k">Ish vaqti</span><span class="td-v">${h(t.work_hours||'—')}</span></div>
-        ${t.weekly_workload?`<div class="td-row"><span class="td-k">Haftalik yuk</span><span class="td-v">${h(t.weekly_workload)}</span></div>`:''}
-        ${t.target_classes?`<div class="td-row"><span class="td-k">Sinflar</span><span class="td-v">${h(t.target_classes)}</span></div>`:''}
       </div>
       <div>
         <div class="dsec">Qo'shimcha</div>
-        <div class="td-row"><span class="td-k">Kerak sababi</span><span class="td-v">${h(t.reason_for_need||'—')}${t.reason_other_detail?` — ${h(t.reason_other_detail)}`:''}</span></div>
-        <div class="td-row"><span class="td-k">Majburiy talablar</span><span class="td-v" style="white-space:pre-wrap">${h(t.mandatory_requirements||'—')}</span></div>
+        <div class="td-row"><span class="td-k">Kerak sababi</span><span class="td-v">${h(t.reason_for_need||'—')}</span></div>
+        <div class="td-row"><span class="td-k">Talablar</span><span class="td-v" style="white-space:pre-wrap">${h(t.mandatory_requirements||'—')}</span></div>
         <div class="td-row"><span class="td-k">Taklif maosh</span><span class="td-v" style="color:var(--green);font-weight:600">${h(t.offered_salary||'—')}</span></div>
         ${t.additional_notes?`<div class="td-row"><span class="td-k">Izoh</span><span class="td-v" style="white-space:pre-wrap">${h(t.additional_notes)}</span></div>`:''}
-        <div class="td-row"><span class="td-k">Status</span><span class="td-v"><span class="badge ${statusClass[st]||'s-new'}">${h(st)}</span></span></div>
+        <div class="td-row"><span class="td-k">Status</span><span class="td-v"><span class="badge ${stCl[st]||'s-new'}">${h(st)}</span></span></div>
         <div class="td-row"><span class="td-k">Yuborilgan</span><span class="td-v">${dateStr}</span></div>
       </div>
     </div>
-    <div style="margin-top:16px">
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
       <label class="fl">Statusni o'zgartirish</label>
       <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
         <select id="tl-status-sel" class="fsel">
@@ -1558,29 +1522,23 @@ async function openTalabnoma(id) {
   openM('tlm');
 }
 
-async function saveTlStatus() {
-  const newStatus = document.getElementById('tl-status-sel').value;
-  try {
-    const res = await fetch(`/api/job_requests/${currentTlId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status: newStatus })
+async function saveTlStatus(){
+  const newStatus=document.getElementById('tl-status-sel').value;
+  try{
+    const res=await fetch(`${API}/job_requests/${tlCurrentId}`,{
+      method:'PATCH',headers:{'Content-Type':'application/json'},
+      credentials:'include',body:JSON.stringify({status:newStatus})
     });
-    if (!res.ok) throw new Error(res.status);
-    toast('success', 'Saqlandi!', 'Status yangilandi.');
+    if(!res.ok)throw new Error(res.status);
+    toast('success','Saqlandi!','Status yangilandi.');
     closeM('tlm');
     await loadTalabnomalar();
-  } catch(e) {
-    toast('error', 'Xatolik', "Status saqlanmadi: " + e.message);
-  }
+  }catch(e){toast('error','Xatolik','Status saqlanmadi: '+e.message);}
 }
 
 checkAuth();
 setInterval(loadAll,60000);
-// Auto-load talabnomalar when tab opened
-const _origShowPage = showPage;
-function showPage(id, el) { _origShowPage(id, el); if(id === "talabnomalar" && !allTalabnomalar.length) loadTalabnomalar(); }
+
 </script>
 </body>
 </html>
