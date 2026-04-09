@@ -767,29 +767,23 @@ let currentUser=null,dtType=null,dtId=null,editAppId=null,editVacId=null,editTmp
 let selIcon="",editBtnId=null,addBtnPid=null,dragAppId=null;
 
 // ── AUTH ──────────────────────────────────────────────────────────
-const LOCAL_USERS = [
-  { username: "admin",    password: "admin123",   name: "Admin",      role: "super_admin" },
-  { username: "hr",       password: "hr123",      name: "HR Menejer", role: "hr_manager"  },
-  { username: "recruiter",password: "recruiter123",name: "Recruiter", role: "recruiter"   }
-];
-
 async function doLogin(){
   document.getElementById("lerr").style.display="none";
   const u=document.getElementById("l-u").value.trim(), p=document.getElementById("l-p").value.trim();
-  const found = LOCAL_USERS.find(x => x.username === u && x.password === p);
-  if(found){
-    currentUser = found;
-    sessionStorage.setItem("currentUser", JSON.stringify(found));
-    showApp(); await loadAll();
-  } else {
-    document.getElementById("lerr").style.display="block";
-    document.getElementById("l-p").value="";
-  }
+  try{
+    const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify({username:u,password:p})});
+    const d=await r.json();
+    if(d.success){ currentUser=d.user; showApp(); await loadAll(); }
+    else{ document.getElementById("lerr").style.display="block"; document.getElementById("l-p").value=""; }
+  }catch(e){ document.getElementById("lerr").style.display="block"; }
 }
-function doLogout(){ sessionStorage.removeItem("currentUser"); location.reload(); }
+async function doLogout(){ await fetch("/api/logout",{method:"POST",credentials:"include"}); location.reload(); }
 async function checkAuth(){
-  const saved = sessionStorage.getItem("currentUser");
-  if(saved){ currentUser = JSON.parse(saved); showApp(); await loadAll(); }
+  try{
+    const r=await fetch("/api/me",{credentials:"include"});
+    const d=await r.json();
+    if(d.user){ currentUser=d.user; showApp(); await loadAll(); }
+  }catch(e){}
 }
 function showApp(){
   document.getElementById("login-page").style.display="none";
@@ -1416,8 +1410,7 @@ document.addEventListener('click',function(e){
 });
 
 // ── TALABNOMALAR (Supabase) ────────────────────────────────────────
-const SB_URL = 'https://vfunkjtksjowziawzfkl.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmdW5ranRrc2pvd3ppYXd6ZmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODY1ODMsImV4cCI6MjA5MTA2MjU4M30.Os8qGR-DROLLdUWuZLqF3SaRhgSWbgBvuqYenGO53YQ';
+// Supabase so'rovlar endi Flask /api/job_requests orqali o'tadi
 
 let allTalabnomalar = [];
 let tlFilterStatus = '';
@@ -1427,13 +1420,10 @@ let currentTlId = null;
 async function loadTalabnomalar() {
   document.getElementById('tl-loading').style.display = 'inline-flex';
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/job_requests?select=*&order=created_at.desc`, {
-      headers: {
-        'apikey': SB_KEY,
-        'Authorization': `Bearer ${SB_KEY}`
-      }
+    const res = await fetch('/api/job_requests', {
+      credentials: 'include'
     });
-    if (!res.ok) throw new Error('Supabase xatolik: ' + res.status);
+    if (!res.ok) throw new Error('Server xatolik: ' + res.status);
     allTalabnomalar = await res.json();
     updateTalabnomaStats();
     renderTalabnomalar();
@@ -1571,14 +1561,10 @@ async function openTalabnoma(id) {
 async function saveTlStatus() {
   const newStatus = document.getElementById('tl-status-sel').value;
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/job_requests?id=eq.${currentTlId}`, {
+    const res = await fetch(`/api/job_requests/${currentTlId}`, {
       method: 'PATCH',
-      headers: {
-        'apikey': SB_KEY,
-        'Authorization': `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status: newStatus })
     });
     if (!res.ok) throw new Error(res.status);
